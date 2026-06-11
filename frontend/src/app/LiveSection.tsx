@@ -132,13 +132,13 @@ export function LiveSection({
         const res = await fetch("/api/scoreboard", { cache: "no-store" });
         if (!res.ok) return;
         const data = (await res.json()) as { scoreboard: LiveMatch[] };
-        const next = data.scoreboard.filter((m) => m.state !== "pre");
-        next.sort((a, b) => {
+        const sorted = data.scoreboard.slice().sort((a, b) => {
           const order = { in: 0, pre: 1, post: 2 } as const;
           if (order[a.state] !== order[b.state])
             return order[a.state] - order[b.state];
           return a.kickoffUtc.localeCompare(b.kickoffUtc);
         });
+        const next = sorted.slice(0, 8);
 
         const newFlashes: Record<FlashKey, { home: boolean; away: boolean }> =
           {};

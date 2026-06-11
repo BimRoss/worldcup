@@ -4,6 +4,8 @@ import { ScheduleList } from "./ScheduleList";
 import { fetchStandings, type Group } from "./standings";
 import { LiveSection } from "./LiveSection";
 import { Bracket } from "./Bracket";
+import { fetchLeaders, type LeaderCategory } from "./leaders";
+import { Leaders } from "./Leaders";
 
 export const revalidate = 30;
 
@@ -91,9 +93,10 @@ export default async function Home() {
   const grouped = groupByDate(matches);
   const venues = Array.from(new Set(matches.map((m) => m.venue))).sort();
 
-  const [scoreboard, standings] = await Promise.all([
+  const [scoreboard, standings, leaders] = await Promise.all([
     fetchScoreboard(new Date()).catch((): LiveMatch[] => []),
     fetchStandings().catch((): Group[] => []),
+    fetchLeaders().catch((): LeaderCategory[] => []),
   ]);
   const scoreMap: Record<string, LiveMatch> = {};
   for (const s of scoreboard) {
@@ -105,12 +108,12 @@ export default async function Home() {
       }
     }
   }
-  const recent = scoreboard.filter((m) => m.state !== "pre");
-  recent.sort((a, b) => {
+  const sortedScores = scoreboard.slice().sort((a, b) => {
     const order = { in: 0, pre: 1, post: 2 } as const;
     if (order[a.state] !== order[b.state]) return order[a.state] - order[b.state];
     return a.kickoffUtc.localeCompare(b.kickoffUtc);
   });
+  const recent = sortedScores.slice(0, 8);
   const hasLive = recent.some((m) => m.state === "in");
 
   return (
@@ -149,6 +152,8 @@ export default async function Home() {
           </p>
         </section>
       )}
+
+      <Leaders categories={leaders} />
 
       <footer className="max-w-3xl mx-auto text-center text-xs text-zinc-600 mt-12">
         Times shown in venue-local.
