@@ -181,7 +181,7 @@ export function LiveSection({
         }
       } catch {}
     }
-    const id = setInterval(tick, 15000);
+    const id = setInterval(tick, 180000);
     return () => {
       stop = true;
       clearInterval(id);

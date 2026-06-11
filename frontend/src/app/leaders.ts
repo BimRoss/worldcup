@@ -56,7 +56,7 @@ const WANT_CATEGORIES = new Set(["goalsLeaders", "assistsLeaders"]);
 
 async function resolveRef<T>(url: string): Promise<T | null> {
   try {
-    const res = await fetch(url, { next: { revalidate: 120 } });
+    const res = await fetch(url, { next: { revalidate: 180 } });
     if (!res.ok) return null;
     return (await res.json()) as T;
   } catch {
@@ -67,7 +67,7 @@ async function resolveRef<T>(url: string): Promise<T | null> {
 export async function fetchScorers(): Promise<Scorer[]> {
   const url =
     "https://sports.core.api.espn.com/v2/sports/soccer/leagues/fifa.world/seasons/2026/types/1/leaders?lang=en&region=us";
-  const res = await fetch(url, { next: { revalidate: 120 } });
+  const res = await fetch(url, { next: { revalidate: 180 } });
   if (!res.ok) return [];
   const data = (await res.json()) as EspnLeadersResponse;
   const cats = (data.categories ?? []).filter((c) =>

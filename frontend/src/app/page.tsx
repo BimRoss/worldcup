@@ -8,7 +8,7 @@ import { BracketModal } from "./BracketModal";
 import { fetchScorers, type Scorer } from "./leaders";
 import { Leaders } from "./Leaders";
 
-export const revalidate = 30;
+export const revalidate = 180;
 
 function groupByDate(list: Match[]): [string, Match[]][] {
   const map = new Map<string, Match[]>();
@@ -126,20 +126,7 @@ export default async function Home() {
   const hasLive = recent.some((m) => m.state === "in");
 
   return (
-    <main className="min-h-screen px-4 sm:px-6 py-10">
-      <section className="max-w-3xl mx-auto text-center space-y-4 mb-10">
-        <p className="text-xs uppercase tracking-widest text-emerald-400">
-          FIFA 2026 — June 11 to July 19
-        </p>
-        <h1 className="text-4xl sm:text-5xl font-bold leading-tight">
-          World Cup 2026
-        </h1>
-        <p className="text-base sm:text-lg text-zinc-400">
-          Live scores and the full 104-match schedule. Pick a host city to
-          highlight its matches.
-        </p>
-      </section>
-
+    <main className="min-h-screen px-4 sm:px-6 py-6">
       <LiveSection initial={recent} hasLive={hasLive} />
 
       <ScheduleList grouped={grouped} venues={venues} scoreMap={scoreMap} />

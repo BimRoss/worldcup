@@ -45,7 +45,7 @@ function stat(stats: EspnStat[], name: string): number {
 export async function fetchStandings(): Promise<Group[]> {
   const url =
     "https://site.api.espn.com/apis/v2/sports/soccer/fifa.world/standings";
-  const res = await fetch(url, { next: { revalidate: 60 } });
+  const res = await fetch(url, { next: { revalidate: 180 } });
   if (!res.ok) return [];
   const data = (await res.json()) as { children?: EspnGroup[] };
   const groups = data.children ?? [];
