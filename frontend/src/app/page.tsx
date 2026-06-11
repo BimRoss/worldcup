@@ -1,18 +1,8 @@
-import { matches, LA_VENUE, type Match } from "./schedule";
+import { matches, type Match } from "./schedule";
 import { fetchScoreboard, type LiveMatch } from "./scores";
+import { ScheduleList } from "./ScheduleList";
 
 export const revalidate = 30;
-
-function formatDate(iso: string): string {
-  const [y, m, d] = iso.split("-").map(Number);
-  const dt = new Date(Date.UTC(y, m - 1, d));
-  return dt.toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    timeZone: "UTC",
-  });
-}
 
 function groupByDate(list: Match[]): [string, Match[]][] {
   const map = new Map<string, Match[]>();
@@ -71,7 +61,7 @@ function LiveCard({ m }: { m: LiveMatch }) {
 
 export default async function Home() {
   const grouped = groupByDate(matches);
-  const laCount = matches.filter((m) => m.venue === LA_VENUE).length;
+  const venues = Array.from(new Set(matches.map((m) => m.venue))).sort();
 
   let scoreboard: LiveMatch[] = [];
   try {
@@ -96,9 +86,8 @@ export default async function Home() {
           World Cup 2026
         </h1>
         <p className="text-base sm:text-lg text-zinc-400">
-          Live scores, the full 104-match schedule, with{" "}
-          <span className="text-emerald-400">{laCount} matches in Los Angeles</span>{" "}
-          highlighted.
+          Live scores and the full 104-match schedule. Pick a host city to
+          highlight its matches.
         </p>
       </section>
 
@@ -125,57 +114,10 @@ export default async function Home() {
         </section>
       )}
 
-      <section className="max-w-3xl mx-auto space-y-8">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
-          Full Schedule
-        </h2>
-        {grouped.map(([date, dayMatches]) => (
-          <div key={date}>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500 border-b border-zinc-800 pb-2 mb-3">
-              {formatDate(date)}
-            </h3>
-            <ul className="space-y-2">
-              {dayMatches.map((m) => {
-                const isLA = m.venue === LA_VENUE;
-                return (
-                  <li
-                    key={m.n}
-                    className={
-                      "rounded-lg px-4 py-3 flex flex-wrap items-center gap-x-4 gap-y-1 " +
-                      (isLA
-                        ? "bg-emerald-500/10 border border-emerald-500/40"
-                        : "bg-zinc-900/60 border border-zinc-800")
-                    }
-                  >
-                    <span className="text-xs font-mono text-zinc-500 w-10 shrink-0">
-                      #{m.n}
-                    </span>
-                    <span className="text-sm font-mono text-zinc-300 w-24 shrink-0 tabular-nums">
-                      {m.kickoff} {m.tz}
-                    </span>
-                    <span className="flex-1 min-w-[12rem] font-medium">
-                      {m.team1}
-                      <span className="text-zinc-500 mx-2">vs</span>
-                      {m.team2}
-                    </span>
-                    <span
-                      className={
-                        "text-xs " +
-                        (isLA ? "text-emerald-300" : "text-zinc-500")
-                      }
-                    >
-                      {m.venue} · {m.stage}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
-      </section>
+      <ScheduleList grouped={grouped} venues={venues} />
 
       <footer className="max-w-3xl mx-auto text-center text-xs text-zinc-600 mt-12">
-        Times shown in venue-local. LA matches at SoFi Stadium.
+        Times shown in venue-local.
       </footer>
     </main>
   );
