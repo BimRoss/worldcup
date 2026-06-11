@@ -54,6 +54,30 @@ body {
   text-shadow: 0 0 12px rgba(52, 211, 153, 0.7);
 }
 
+/* Google Translate widget — hide the top banner Google injects, keep just the dropdown. */
+.goog-te-banner-frame.skiptranslate,
+.goog-te-banner-frame { display: none !important; }
+body { top: 0 !important; position: static !important; }
+.goog-tooltip,
+.goog-tooltip:hover { display: none !important; }
+.goog-text-highlight { background-color: transparent !important; box-shadow: none !important; }
+.lang-selector .goog-te-gadget { font-size: 0 !important; color: transparent !important; }
+.lang-selector .goog-te-gadget > span { display: none !important; }
+.lang-selector .goog-te-gadget .goog-te-combo {
+  margin: 0 !important;
+  padding: 4px 8px !important;
+  border-radius: 6px !important;
+  border: 1px solid rgb(228 228 231) !important;
+  background: #ffffff !important;
+  color: #18181b !important;
+  font-size: 12px !important;
+  font-family: inherit !important;
+  cursor: pointer;
+}
+.lang-selector .goog-te-gadget .goog-te-combo:hover {
+  border-color: rgb(161 161 170) !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-score-flash,
   .animate-ball-fly,
