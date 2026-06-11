@@ -13,6 +13,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <meta httpEquiv="refresh" content="180" />
+      </head>
       <body>
         <a
           href="https://makeacompany.ai"
