@@ -1,6 +1,7 @@
 import { matches, type Match } from "./schedule";
 import { fetchScoreboard, pairKey, type LiveMatch } from "./scores";
 import { ScheduleList } from "./ScheduleList";
+import { fetchStandings, type Group } from "./standings";
 
 export const revalidate = 30;
 
@@ -59,16 +60,81 @@ function LiveCard({ m }: { m: LiveMatch }) {
   );
 }
 
+function GroupCard({ group }: { group: Group }) {
+  const top2 = 2;
+  return (
+    <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 overflow-hidden">
+      <div className="px-3 py-2 border-b border-zinc-800 bg-zinc-900/80 text-xs font-semibold uppercase tracking-wider text-zinc-300">
+        {group.name}
+      </div>
+      <table className="w-full text-xs">
+        <thead>
+          <tr className="text-zinc-500 text-[10px] uppercase tracking-wider">
+            <th className="text-left font-medium px-3 py-1.5 w-6">#</th>
+            <th className="text-left font-medium px-1 py-1.5">Team</th>
+            <th className="text-right font-medium px-1 py-1.5 w-6">P</th>
+            <th className="text-right font-medium px-1 py-1.5 w-6">W</th>
+            <th className="text-right font-medium px-1 py-1.5 w-6">D</th>
+            <th className="text-right font-medium px-1 py-1.5 w-6">L</th>
+            <th className="text-right font-medium px-1 py-1.5 w-8">GD</th>
+            <th className="text-right font-medium px-3 py-1.5 w-8">Pts</th>
+          </tr>
+        </thead>
+        <tbody>
+          {group.entries.map((e, i) => {
+            const advancing = i < top2;
+            return (
+              <tr
+                key={e.team}
+                className={
+                  "border-t border-zinc-800/60 " +
+                  (advancing ? "bg-emerald-500/[0.04]" : "")
+                }
+              >
+                <td className="px-3 py-1.5 text-zinc-500 tabular-nums">
+                  {advancing && (
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 mr-1 align-middle" />
+                  )}
+                  {i + 1}
+                </td>
+                <td className="px-1 py-1.5 truncate text-zinc-200 max-w-[10rem]">
+                  {e.team}
+                </td>
+                <td className="px-1 py-1.5 text-right text-zinc-400 tabular-nums">
+                  {e.played}
+                </td>
+                <td className="px-1 py-1.5 text-right text-zinc-400 tabular-nums">
+                  {e.wins}
+                </td>
+                <td className="px-1 py-1.5 text-right text-zinc-400 tabular-nums">
+                  {e.draws}
+                </td>
+                <td className="px-1 py-1.5 text-right text-zinc-400 tabular-nums">
+                  {e.losses}
+                </td>
+                <td className="px-1 py-1.5 text-right text-zinc-400 tabular-nums">
+                  {e.goalDiff > 0 ? `+${e.goalDiff}` : e.goalDiff}
+                </td>
+                <td className="px-3 py-1.5 text-right font-semibold text-zinc-100 tabular-nums">
+                  {e.points}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export default async function Home() {
   const grouped = groupByDate(matches);
   const venues = Array.from(new Set(matches.map((m) => m.venue))).sort();
 
-  let scoreboard: LiveMatch[] = [];
-  try {
-    scoreboard = await fetchScoreboard(new Date());
-  } catch {
-    scoreboard = [];
-  }
+  const [scoreboard, standings] = await Promise.all([
+    fetchScoreboard(new Date()).catch((): LiveMatch[] => []),
+    fetchStandings().catch((): Group[] => []),
+  ]);
   const scoreMap: Record<string, LiveMatch> = {};
   for (const s of scoreboard) {
     const key = pairKey(s.homeTeam, s.awayTeam);
@@ -126,6 +192,22 @@ export default async function Home() {
       )}
 
       <ScheduleList grouped={grouped} venues={venues} scoreMap={scoreMap} />
+
+      {standings.length > 0 && (
+        <section className="max-w-5xl mx-auto mt-16">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400 mb-4 px-1">
+            Group Rankings
+          </h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {standings.map((g) => (
+              <GroupCard key={g.id} group={g} />
+            ))}
+          </div>
+          <p className="text-xs text-zinc-600 mt-3 px-1">
+            Standings refresh every minute. Source: ESPN.
+          </p>
+        </section>
+      )}
 
       <footer className="max-w-3xl mx-auto text-center text-xs text-zinc-600 mt-12">
         Times shown in venue-local.
