@@ -28,7 +28,7 @@ export default function RootLayout({
               className="h-8 w-auto shrink-0"
             />
             <span className="text-base sm:text-lg font-bold leading-tight">
-              Make YOUR Goal. Make a Company in less than 45 minutes.
+              Make YOUR GOAL, Make YOUR COMPANY.
             </span>
           </div>
         </a>
