@@ -18,9 +18,18 @@ export default function RootLayout({
           href="https://makeacompany.ai"
           target="_blank"
           rel="noopener"
-          className="block w-full bg-emerald-500 text-zinc-950 text-center text-sm font-medium py-2 px-4 hover:bg-emerald-400 transition-colors"
+          className="flex items-center justify-center gap-3 w-full bg-white text-black py-3 px-4 border-b border-zinc-200 hover:bg-zinc-50 transition-colors"
         >
-          Built on Make A Company → makeacompany.ai
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="https://makeacompany.ai/logo-navbar-black.png"
+            alt="makeacompany.ai"
+            className="h-5 w-auto"
+          />
+          <span className="text-sm text-zinc-600">
+            Built with{" "}
+            <span className="text-black font-medium">makeacompany.ai</span>
+          </span>
         </a>
         {children}
       </body>
