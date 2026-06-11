@@ -20,26 +20,29 @@ export default function RootLayout({
           rel="noopener"
           className="block w-full bg-white text-black border-b border-zinc-200 hover:bg-zinc-50 transition-colors"
         >
-          <div className="max-w-3xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 text-center sm:text-left">
+          <div className="max-w-3xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 text-center sm:text-left">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="https://makeacompany.ai/logo-navbar-black.png"
               alt="makeacompany.ai"
               className="h-8 w-auto shrink-0"
             />
-            <div className="flex flex-col gap-0.5">
-              <span className="text-base sm:text-lg font-bold leading-tight">
-                Make YOUR Goal. Make a Company in less than 45 minutes.
-              </span>
-              <span className="text-xs sm:text-sm text-zinc-600">
-                Join your two{" "}
-                <span className="text-emerald-600 font-semibold">WINGERS</span>{" "}
-                right now (Ross &amp; Joanne).{" "}
-                <span className="text-emerald-600 font-semibold">
-                  Only 5 free spots left.
-                </span>
-              </span>
-            </div>
+            <span className="text-base sm:text-lg font-bold leading-tight">
+              Make YOUR Goal. Make a Company in less than 45 minutes.
+            </span>
+          </div>
+        </a>
+        <a
+          href="https://makeacompany.ai"
+          target="_blank"
+          rel="noopener"
+          className="block w-full bg-emerald-600 text-white border-b border-emerald-700 hover:bg-emerald-500 transition-colors"
+        >
+          <div className="max-w-3xl mx-auto px-4 py-1.5 text-center text-xs sm:text-sm">
+            Join today, only a few{" "}
+            <span className="font-bold">FREE spots</span> left. Get to work with{" "}
+            <span className="font-bold">Ross &amp; Joanne</span>, your two AI{" "}
+            <span className="font-bold">WINGERS</span>.
           </div>
         </a>
         {children}
