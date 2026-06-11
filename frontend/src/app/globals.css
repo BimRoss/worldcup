@@ -10,3 +10,55 @@ body {
   color: var(--foreground);
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
+
+@keyframes score-flash {
+  0%   { transform: scale(1);    color: inherit;          text-shadow: none; }
+  20%  { transform: scale(1.6);  color: #34d399;          text-shadow: 0 0 18px rgba(52, 211, 153, 0.9); }
+  60%  { transform: scale(1.2);  color: #6ee7b7;          text-shadow: 0 0 10px rgba(110, 231, 183, 0.6); }
+  100% { transform: scale(1);    color: inherit;          text-shadow: none; }
+}
+.animate-score-flash {
+  animation: score-flash 1.4s ease-out;
+  display: inline-block;
+}
+
+@keyframes ball-fly {
+  0%   { left: -10%; top: 85%;  transform: rotate(0deg)    scale(0.8); opacity: 0; }
+  10%  { opacity: 1; }
+  50%  { left: 50%;  top: 18%;  transform: rotate(540deg)  scale(1.4); }
+  85%  { left: 88%;  top: 38%;  transform: rotate(1080deg) scale(1.1); opacity: 1; }
+  100% { left: 92%;  top: 50%;  transform: rotate(1200deg) scale(0.9); opacity: 0; }
+}
+.animate-ball-fly {
+  animation: ball-fly 1.6s cubic-bezier(0.3, 0.1, 0.4, 1) forwards;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+}
+
+@keyframes goal-flash {
+  0%   { opacity: 0; }
+  20%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+.animate-goal-flash {
+  animation: goal-flash 1.6s ease-out forwards;
+}
+
+@keyframes goal-shout {
+  0%   { opacity: 0; transform: translateY(-50%) scale(0.6); }
+  30%  { opacity: 1; transform: translateY(-50%) scale(1.4); }
+  60%  { opacity: 1; transform: translateY(-50%) scale(1); }
+  100% { opacity: 0; transform: translateY(-50%) scale(1); }
+}
+.animate-goal-shout {
+  animation: goal-shout 1.8s ease-out forwards;
+  text-shadow: 0 0 12px rgba(52, 211, 153, 0.7);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-score-flash,
+  .animate-ball-fly,
+  .animate-goal-flash,
+  .animate-goal-shout {
+    animation: none;
+  }
+}

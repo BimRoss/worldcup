@@ -2,6 +2,7 @@ import { matches, type Match } from "./schedule";
 import { fetchScoreboard, pairKey, type LiveMatch } from "./scores";
 import { ScheduleList } from "./ScheduleList";
 import { fetchStandings, type Group } from "./standings";
+import { LiveSection } from "./LiveSection";
 
 export const revalidate = 30;
 
@@ -16,48 +17,6 @@ function groupByDate(list: Match[]): [string, Match[]][] {
     date,
     ms.slice().sort((a, b) => a.n - b.n),
   ]);
-}
-
-function LiveCard({ m }: { m: LiveMatch }) {
-  const isLive = m.state === "in";
-  const isFinal = m.state === "post";
-  const badge = isLive ? (
-    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 text-xs font-medium">
-      <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
-      LIVE · {m.shortDetail}
-    </span>
-  ) : isFinal ? (
-    <span className="px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 text-xs font-medium">
-      FT
-    </span>
-  ) : (
-    <span className="px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 text-xs font-medium">
-      {m.shortDetail}
-    </span>
-  );
-  const scoreClass = isLive ? "text-white" : isFinal ? "text-zinc-300" : "text-zinc-600";
-  return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-4 flex flex-col gap-3">
-      <div className="flex items-center justify-between gap-2">
-        {badge}
-        <span className="text-xs text-zinc-500 truncate">{m.venue}</span>
-      </div>
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="font-medium">{m.homeTeam}</span>
-          <span className={`text-2xl font-bold tabular-nums ${scoreClass}`}>
-            {m.homeScore ?? "–"}
-          </span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="font-medium">{m.awayTeam}</span>
-          <span className={`text-2xl font-bold tabular-nums ${scoreClass}`}>
-            {m.awayScore ?? "–"}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 function GroupCard({ group }: { group: Group }) {
@@ -168,28 +127,7 @@ export default async function Home() {
         </p>
       </section>
 
-      {recent.length > 0 && (
-        <section className="max-w-3xl mx-auto mb-12">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400 mb-3 flex items-center gap-2">
-            {hasLive ? (
-              <>
-                <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-                Live & Recent
-              </>
-            ) : (
-              "Today"
-            )}
-          </h2>
-          <div className="grid sm:grid-cols-2 gap-3">
-            {recent.map((m) => (
-              <LiveCard key={m.id} m={m} />
-            ))}
-          </div>
-          <p className="text-xs text-zinc-600 mt-3">
-            Scores refresh every 30 seconds. Source: ESPN.
-          </p>
-        </section>
-      )}
+      <LiveSection initial={recent} hasLive={hasLive} />
 
       <ScheduleList grouped={grouped} venues={venues} scoreMap={scoreMap} />
 

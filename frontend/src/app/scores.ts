@@ -3,6 +3,13 @@ export type Period = {
   away: number | null;
 };
 
+export type VideoLink = {
+  headline: string;
+  href: string;
+  thumbnail: string;
+  duration: number;
+};
+
 export type LiveMatch = {
   id: string;
   date: string;
@@ -17,6 +24,7 @@ export type LiveMatch = {
   kickoffUtc: string;
   firstHalf: Period | null;
   secondHalf: Period | null;
+  videos: VideoLink[];
 };
 
 type EspnEvent = {
@@ -44,6 +52,12 @@ type EspnSummary = {
       }>;
     }>;
   };
+  videos?: Array<{
+    headline?: string;
+    thumbnail?: string;
+    duration?: number;
+    links?: { web?: { href?: string } };
+  }>;
 };
 
 function ymdUtc(d: Date): string {
@@ -70,6 +84,7 @@ function parseLine(
 async function fetchSummary(eventId: string): Promise<{
   firstHalf: Period | null;
   secondHalf: Period | null;
+  videos: VideoLink[];
 } | null> {
   const url =
     "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=" +
@@ -90,7 +105,15 @@ async function fetchSummary(eventId: string): Promise<{
     homeLines[1] || awayLines[1]
       ? { home: parseLine(homeLines[1]), away: parseLine(awayLines[1]) }
       : null;
-  return { firstHalf, secondHalf };
+  const videos: VideoLink[] = (data.videos ?? [])
+    .map((v) => ({
+      headline: v.headline ?? "",
+      href: v.links?.web?.href ?? "",
+      thumbnail: v.thumbnail ?? "",
+      duration: v.duration ?? 0,
+    }))
+    .filter((v) => v.headline && v.href);
+  return { firstHalf, secondHalf, videos };
 }
 
 export async function fetchScoreboard(now: Date): Promise<LiveMatch[]> {
@@ -123,6 +146,7 @@ export async function fetchScoreboard(now: Date): Promise<LiveMatch[]> {
       kickoffUtc: e.date,
       firstHalf: null,
       secondHalf: null,
+      videos: [],
     };
   });
 
@@ -133,6 +157,7 @@ export async function fetchScoreboard(now: Date): Promise<LiveMatch[]> {
       if (!lines) return;
       m.firstHalf = lines.firstHalf;
       m.secondHalf = lines.secondHalf;
+      m.videos = lines.videos;
     }),
   );
 
