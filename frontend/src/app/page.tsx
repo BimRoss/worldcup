@@ -1,5 +1,5 @@
 import { matches, type Match } from "./schedule";
-import { fetchScoreboard, type LiveMatch } from "./scores";
+import { fetchScoreboard, pairKey, type LiveMatch } from "./scores";
 import { ScheduleList } from "./ScheduleList";
 
 export const revalidate = 30;
@@ -69,12 +69,23 @@ export default async function Home() {
   } catch {
     scoreboard = [];
   }
-  scoreboard.sort((a, b) => {
+  const scoreMap: Record<string, LiveMatch> = {};
+  for (const s of scoreboard) {
+    const key = pairKey(s.homeTeam, s.awayTeam);
+    for (const m of matches) {
+      if (pairKey(m.team1, m.team2) === key && m.date === s.date) {
+        scoreMap[`${m.team1}|${m.team2}`] = s;
+        break;
+      }
+    }
+  }
+  const recent = scoreboard.filter((m) => m.state !== "pre");
+  recent.sort((a, b) => {
     const order = { in: 0, pre: 1, post: 2 } as const;
     if (order[a.state] !== order[b.state]) return order[a.state] - order[b.state];
     return a.kickoffUtc.localeCompare(b.kickoffUtc);
   });
-  const hasLive = scoreboard.some((m) => m.state === "in");
+  const hasLive = recent.some((m) => m.state === "in");
 
   return (
     <main className="min-h-screen px-4 sm:px-6 py-10">
@@ -91,7 +102,7 @@ export default async function Home() {
         </p>
       </section>
 
-      {scoreboard.length > 0 && (
+      {recent.length > 0 && (
         <section className="max-w-3xl mx-auto mb-12">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400 mb-3 flex items-center gap-2">
             {hasLive ? (
@@ -104,7 +115,7 @@ export default async function Home() {
             )}
           </h2>
           <div className="grid sm:grid-cols-2 gap-3">
-            {scoreboard.map((m) => (
+            {recent.map((m) => (
               <LiveCard key={m.id} m={m} />
             ))}
           </div>
@@ -114,7 +125,7 @@ export default async function Home() {
         </section>
       )}
 
-      <ScheduleList grouped={grouped} venues={venues} />
+      <ScheduleList grouped={grouped} venues={venues} scoreMap={scoreMap} />
 
       <footer className="max-w-3xl mx-auto text-center text-xs text-zinc-600 mt-12">
         Times shown in venue-local.

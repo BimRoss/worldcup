@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { LA_VENUE, type Match } from "./schedule";
+import type { LiveMatch } from "./scores";
 
 function formatDate(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);
@@ -14,12 +15,59 @@ function formatDate(iso: string): string {
   });
 }
 
+function fmt(n: number | null): string {
+  return n == null ? "–" : String(n);
+}
+
+function ScoreBubbles({ live, m }: { live: LiveMatch; m: Match }) {
+  // ESPN's home/away may not match schedule's team1/team2 ordering. Align by name.
+  const homeIsTeam1 =
+    live.homeTeam.toLowerCase().includes(m.team1.toLowerCase().slice(0, 4)) ||
+    m.team1.toLowerCase().includes(live.homeTeam.toLowerCase().slice(0, 4));
+  const t1Score = homeIsTeam1 ? live.homeScore : live.awayScore;
+  const t2Score = homeIsTeam1 ? live.awayScore : live.homeScore;
+  const fh = live.firstHalf;
+  const sh = live.secondHalf;
+  const fh1 = fh ? (homeIsTeam1 ? fh.home : fh.away) : null;
+  const fh2 = fh ? (homeIsTeam1 ? fh.away : fh.home) : null;
+  const sh1 = sh ? (homeIsTeam1 ? sh.home : sh.away) : null;
+  const sh2 = sh ? (homeIsTeam1 ? sh.away : sh.home) : null;
+
+  const isLive = live.state === "in";
+  const totalClass = isLive
+    ? "bg-red-500/15 text-red-300 border border-red-500/40"
+    : "bg-zinc-800 text-zinc-200 border border-zinc-700";
+
+  return (
+    <div className="flex items-center gap-1.5 text-[10px] font-mono shrink-0">
+      {fh && (
+        <span className="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">
+          1H {fmt(fh1)}–{fmt(fh2)}
+        </span>
+      )}
+      {sh && (
+        <span className="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">
+          2H {fmt(sh1)}–{fmt(sh2)}
+        </span>
+      )}
+      <span className={`px-1.5 py-0.5 rounded font-semibold ${totalClass}`}>
+        {isLive && (
+          <span className="inline-block h-1 w-1 rounded-full bg-red-500 animate-pulse mr-1 align-middle" />
+        )}
+        T {fmt(t1Score)}–{fmt(t2Score)}
+      </span>
+    </div>
+  );
+}
+
 export function ScheduleList({
   grouped,
   venues,
+  scoreMap,
 }: {
   grouped: [string, Match[]][];
   venues: string[];
+  scoreMap: Record<string, LiveMatch>;
 }) {
   const [highlight, setHighlight] = useState<string>(LA_VENUE);
   const highlightCount = grouped.reduce(
@@ -59,6 +107,7 @@ export function ScheduleList({
           <ul className="space-y-2">
             {dayMatches.map((m) => {
               const isHighlighted = m.venue === highlight;
+              const live = scoreMap[`${m.team1}|${m.team2}`];
               return (
                 <li
                   key={m.n}
@@ -80,6 +129,7 @@ export function ScheduleList({
                     <span className="text-zinc-500 mx-2">vs</span>
                     {m.team2}
                   </span>
+                  {live && <ScoreBubbles live={live} m={m} />}
                   <span
                     className={
                       "text-xs " +
