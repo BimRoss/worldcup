@@ -13,7 +13,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <a
+          href="https://makeacompany.ai"
+          target="_blank"
+          rel="noopener"
+          className="block w-full bg-emerald-500 text-zinc-950 text-center text-sm font-medium py-2 px-4 hover:bg-emerald-400 transition-colors"
+        >
+          Built on Make A Company → makeacompany.ai
+        </a>
+        {children}
+      </body>
     </html>
   );
 }
