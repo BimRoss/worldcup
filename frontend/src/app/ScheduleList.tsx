@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { LA_VENUE, type Match } from "./schedule";
 import type { LiveMatch } from "./scores";
 
@@ -57,6 +57,7 @@ export function ScheduleList({
     (acc, [, ms]) => acc + ms.filter((m) => m.venue === highlight).length,
     0,
   );
+  let matchIdx = 0;
 
   return (
     <section className="max-w-3xl mx-auto space-y-8">
@@ -91,37 +92,57 @@ export function ScheduleList({
             {dayMatches.map((m) => {
               const isHighlighted = m.venue === highlight;
               const live = scoreMap[`${m.team1}|${m.team2}`];
+              const showNudge = matchIdx > 0 && matchIdx % 5 === 0;
+              matchIdx += 1;
               return (
-                <li
-                  key={m.n}
-                  className={
-                    "rounded-lg px-4 py-3 flex flex-wrap items-center gap-x-4 gap-y-1 " +
-                    (isHighlighted
-                      ? "bg-emerald-500/10 border border-emerald-500/40"
-                      : "bg-zinc-900/60 border border-zinc-800")
-                  }
-                >
-                  <span className="text-xs font-mono text-zinc-500 w-10 shrink-0">
-                    #{m.n}
-                  </span>
-                  <span className="text-sm font-mono text-zinc-300 w-24 shrink-0 tabular-nums">
-                    {m.kickoff} {m.tz}
-                  </span>
-                  <span className="flex-1 min-w-[12rem] font-medium">
-                    {m.team1}
-                    <span className="text-zinc-500 mx-2">vs</span>
-                    {m.team2}
-                  </span>
-                  {live && <ScoreBubbles live={live} m={m} />}
-                  <span
+                <Fragment key={m.n}>
+                  {showNudge && (
+                    <li className="rounded-lg px-4 py-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 bg-emerald-500/10 border border-emerald-500/40">
+                      <span className="text-sm text-emerald-100">
+                        While you watch,{" "}
+                        <span className="font-bold">launch yours.</span> Make a
+                        Company pairs founders with AI co-pilots.
+                      </span>
+                      <a
+                        href="https://makeacompany.ai"
+                        target="_blank"
+                        rel="noopener"
+                        className="inline-block rounded-md bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold px-3 py-1.5 text-xs transition-colors shrink-0"
+                      >
+                        Start now →
+                      </a>
+                    </li>
+                  )}
+                  <li
                     className={
-                      "text-xs " +
-                      (isHighlighted ? "text-emerald-300" : "text-zinc-500")
+                      "rounded-lg px-4 py-3 flex flex-wrap items-center gap-x-4 gap-y-1 " +
+                      (isHighlighted
+                        ? "bg-emerald-500/10 border border-emerald-500/40"
+                        : "bg-zinc-900/60 border border-zinc-800")
                     }
                   >
-                    {m.venue} · {m.stage}
-                  </span>
-                </li>
+                    <span className="text-xs font-mono text-zinc-500 w-10 shrink-0">
+                      #{m.n}
+                    </span>
+                    <span className="text-sm font-mono text-zinc-300 w-24 shrink-0 tabular-nums">
+                      {m.kickoff} {m.tz}
+                    </span>
+                    <span className="flex-1 min-w-[12rem] font-medium">
+                      {m.team1}
+                      <span className="text-zinc-500 mx-2">vs</span>
+                      {m.team2}
+                    </span>
+                    {live && <ScoreBubbles live={live} m={m} />}
+                    <span
+                      className={
+                        "text-xs " +
+                        (isHighlighted ? "text-emerald-300" : "text-zinc-500")
+                      }
+                    >
+                      {m.venue} · {m.stage}
+                    </span>
+                  </li>
+                </Fragment>
               );
             })}
           </ul>

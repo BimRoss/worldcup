@@ -23,29 +23,16 @@ export default function RootLayout({
           rel="noopener"
           className="block w-full bg-white text-black border-b border-zinc-200 hover:bg-zinc-50 transition-colors"
         >
-          <div className="max-w-3xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 text-center sm:text-left">
+          <div className="max-w-5xl mx-auto px-4 py-2 flex items-center justify-between gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="https://makeacompany.ai/logo-navbar-black.png"
               alt="makeacompany.ai"
-              className="h-8 w-auto shrink-0"
+              className="h-6 sm:h-7 w-auto shrink-0"
             />
-            <span className="text-base sm:text-lg font-bold leading-tight">
-              Make YOUR GOAL, Make YOUR COMPANY.
+            <span className="text-xs sm:text-sm font-semibold text-emerald-700">
+              makeacompany.ai →
             </span>
-          </div>
-        </a>
-        <a
-          href="https://makeacompany.ai"
-          target="_blank"
-          rel="noopener"
-          className="block w-full bg-emerald-600 text-white border-b border-emerald-700 hover:bg-emerald-500 transition-colors"
-        >
-          <div className="max-w-3xl mx-auto px-4 py-1.5 text-center text-xs sm:text-sm">
-            Join today, only a few{" "}
-            <span className="font-bold">FREE spots</span> left. Get to work with{" "}
-            <span className="font-bold">Ross &amp; Joanne</span>, your two AI{" "}
-            <span className="font-bold">WINGERS</span>.
           </div>
         </a>
         {children}

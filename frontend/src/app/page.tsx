@@ -127,6 +127,37 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen px-4 sm:px-6 py-6">
+      <section className="max-w-4xl mx-auto text-center mt-2 mb-8 sm:mb-10">
+        <p className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-emerald-400 mb-3">
+          A makeacompany.ai project · FIFA 2026
+        </p>
+        <h1 className="text-4xl sm:text-6xl font-black leading-[1.05] tracking-tight">
+          Make YOUR <span className="text-emerald-400">GOAL.</span>
+          <br className="sm:hidden" />{" "}
+          Make YOUR <span className="text-emerald-400">COMPANY.</span>
+        </h1>
+        <p className="mt-4 text-base sm:text-lg text-zinc-300 max-w-2xl mx-auto leading-relaxed">
+          Make a Company helps founders launch real businesses with AI
+          co-pilots. While you watch the cup, come launch yours.
+        </p>
+        <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <a
+            href="https://makeacompany.ai"
+            target="_blank"
+            rel="noopener"
+            className="inline-block rounded-md bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold px-6 py-3 text-sm sm:text-base transition-colors"
+          >
+            Start your company today →
+          </a>
+          <span className="text-xs text-zinc-500">
+            A few <span className="font-bold text-emerald-400">FREE</span>{" "}
+            spots left. Work with{" "}
+            <span className="font-bold text-zinc-200">Ross &amp; Joanne</span>,
+            your AI wingers.
+          </span>
+        </div>
+      </section>
+
       <LiveSection initial={recent} hasLive={hasLive} />
 
       <ScheduleList grouped={grouped} venues={venues} scoreMap={scoreMap} />
