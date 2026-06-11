@@ -3,6 +3,7 @@ import { fetchScoreboard, pairKey, type LiveMatch } from "./scores";
 import { ScheduleList } from "./ScheduleList";
 import { fetchStandings, type Group } from "./standings";
 import { LiveSection } from "./LiveSection";
+import { Bracket } from "./Bracket";
 
 export const revalidate = 30;
 
@@ -130,6 +131,8 @@ export default async function Home() {
       <LiveSection initial={recent} hasLive={hasLive} />
 
       <ScheduleList grouped={grouped} venues={venues} scoreMap={scoreMap} />
+
+      <Bracket scoreMap={scoreMap} />
 
       {standings.length > 0 && (
         <section className="max-w-5xl mx-auto mt-16">
