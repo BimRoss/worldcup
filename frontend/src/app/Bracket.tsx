@@ -98,10 +98,7 @@ export function Bracket({ scoreMap }: { scoreMap: Record<string, LiveMatch> }) {
   if (byStage.length === 0) return null;
 
   return (
-    <section className="max-w-7xl mx-auto mt-16">
-      <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400 mb-4 px-1">
-        Knockout Bracket
-      </h2>
+    <div>
       <div className="overflow-x-auto">
         <div className="flex gap-3 min-w-max pb-3">
           {byStage.map((col) => (
@@ -139,8 +136,8 @@ export function Bracket({ scoreMap }: { scoreMap: Record<string, LiveMatch> }) {
         </div>
       </div>
       <p className="text-xs text-zinc-600 mt-3 px-1">
-        Slots fill in as groups conclude. Source: schedule + ESPN.
+        Source: schedule + ESPN.
       </p>
-    </section>
+    </div>
   );
 }

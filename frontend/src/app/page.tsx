@@ -4,7 +4,8 @@ import { ScheduleList } from "./ScheduleList";
 import { fetchStandings, type Group } from "./standings";
 import { LiveSection } from "./LiveSection";
 import { Bracket } from "./Bracket";
-import { fetchLeaders, type LeaderCategory } from "./leaders";
+import { BracketModal } from "./BracketModal";
+import { fetchScorers, type Scorer } from "./leaders";
 import { Leaders } from "./Leaders";
 
 export const revalidate = 30;
@@ -53,13 +54,21 @@ function GroupCard({ group }: { group: Group }) {
                   (advancing ? "bg-emerald-500/[0.04]" : "")
                 }
               >
-                <td className="px-3 py-1.5 text-zinc-500 tabular-nums">
-                  {advancing && (
-                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 mr-1 align-middle" />
+                <td className="px-3 py-1.5 tabular-nums">
+                  {advancing ? (
+                    <span className="inline-flex items-center justify-center h-4 min-w-[1rem] px-1 rounded text-[9px] font-bold bg-emerald-500 text-zinc-950">
+                      Q
+                    </span>
+                  ) : (
+                    <span className="text-zinc-500">{i + 1}</span>
                   )}
-                  {i + 1}
                 </td>
-                <td className="px-1 py-1.5 truncate text-zinc-200 max-w-[10rem]">
+                <td
+                  className={
+                    "px-1 py-1.5 truncate max-w-[10rem] " +
+                    (advancing ? "text-emerald-100 font-medium" : "text-zinc-200")
+                  }
+                >
                   {e.team}
                 </td>
                 <td className="px-1 py-1.5 text-right text-zinc-400 tabular-nums">
@@ -93,10 +102,10 @@ export default async function Home() {
   const grouped = groupByDate(matches);
   const venues = Array.from(new Set(matches.map((m) => m.venue))).sort();
 
-  const [scoreboard, standings, leaders] = await Promise.all([
+  const [scoreboard, standings, scorers] = await Promise.all([
     fetchScoreboard(new Date()).catch((): LiveMatch[] => []),
     fetchStandings().catch((): Group[] => []),
-    fetchLeaders().catch((): LeaderCategory[] => []),
+    fetchScorers().catch((): Scorer[] => []),
   ]);
   const scoreMap: Record<string, LiveMatch> = {};
   for (const s of scoreboard) {
@@ -135,13 +144,23 @@ export default async function Home() {
 
       <ScheduleList grouped={grouped} venues={venues} scoreMap={scoreMap} />
 
-      <Bracket scoreMap={scoreMap} />
+      <BracketModal>
+        <Bracket scoreMap={scoreMap} />
+      </BracketModal>
 
       {standings.length > 0 && (
         <section className="max-w-5xl mx-auto mt-16">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400 mb-4 px-1">
-            Group Rankings
-          </h2>
+          <div className="px-1 mb-4 flex items-baseline gap-3 flex-wrap">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
+              Group Rankings
+            </h2>
+            <span className="text-[10px] text-zinc-500 inline-flex items-center gap-1.5">
+              <span className="inline-flex items-center justify-center h-3.5 min-w-[0.875rem] px-1 rounded text-[8px] font-bold bg-emerald-500 text-zinc-950">
+                Q
+              </span>
+              top two qualify for the next round
+            </span>
+          </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {standings.map((g) => (
               <GroupCard key={g.id} group={g} />
@@ -153,7 +172,7 @@ export default async function Home() {
         </section>
       )}
 
-      <Leaders categories={leaders} />
+      <Leaders scorers={scorers} />
 
       <footer className="max-w-3xl mx-auto text-center text-xs text-zinc-600 mt-12">
         Times shown in venue-local.
