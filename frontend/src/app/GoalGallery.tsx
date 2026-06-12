@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import type { Goal } from "./goals";
 import { track } from "./track";
+import { TrackedLink } from "./TrackedLink";
 
 const STORAGE_KEY = "worldcup-goal-likes-v1";
 const EMPTY_RAW = "[]";
@@ -114,6 +115,23 @@ export function GoalGallery({ goals }: { goals: Goal[] }) {
         <p className="text-xs text-zinc-500 mt-0.5">
           Every goal scored. Tap to open, then vote for your favorite.
         </p>
+      </div>
+
+      <div className="mb-4 rounded-lg px-4 py-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 bg-emerald-500/10 border border-emerald-500/40">
+        <span className="text-sm text-emerald-100">
+          <span className="font-bold">KICK ALS&apos; ASS!</span> Every goal here
+          is a chance to fight back. Chip in to the ALS Association.
+        </span>
+        <TrackedLink
+          href="https://secure.als.org/donate"
+          target="_blank"
+          rel="noopener"
+          className="inline-block rounded-md bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold px-3 py-1.5 text-xs transition-colors shrink-0"
+          event="cta_click"
+          params={{ cta_id: "donate_als_goal_gallery", link_target: "als" }}
+        >
+          Donate →
+        </TrackedLink>
       </div>
 
       {goals.length === 0 ? (
