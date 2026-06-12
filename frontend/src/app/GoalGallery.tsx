@@ -179,7 +179,7 @@ export function GoalGallery({ goals }: { goals: Goal[] }) {
           KICK ALS&apos; ASS!
         </span>
         <TrackedLink
-          href="https://secure.als.org/donate"
+          href="https://als.org"
           target="_blank"
           rel="noopener"
           className="inline-block rounded-md bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold px-3 py-1.5 text-xs transition-colors shrink-0"
