@@ -15,12 +15,22 @@ function formatDate(iso: string): string {
   });
 }
 
+function formatDateShort(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  return dt.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
+
 function fmt(n: number | null): string {
   return n == null ? "–" : String(n);
 }
 
 function ScoreBubbles({ live, m }: { live: LiveMatch; m: Match }) {
-  // ESPN's home/away may not match schedule's team1/team2 ordering. Align by name.
   const homeIsTeam1 =
     live.homeTeam.toLowerCase().includes(m.team1.toLowerCase().slice(0, 4)) ||
     m.team1.toLowerCase().includes(live.homeTeam.toLowerCase().slice(0, 4));
@@ -43,13 +53,6 @@ function ScoreBubbles({ live, m }: { live: LiveMatch; m: Match }) {
   );
 }
 
-type Bucket = "today" | "upcoming" | "prior";
-
-function bucketFor(date: string, today: string): Bucket {
-  if (date === today) return "today";
-  return date > today ? "upcoming" : "prior";
-}
-
 export function ScheduleList({
   grouped,
   venues,
@@ -62,22 +65,32 @@ export function ScheduleList({
   today: string;
 }) {
   const [highlight, setHighlight] = useState<string>(LA_VENUE);
+  const [dateFilter, setDateFilter] = useState<string>("all");
+  const [expanded, setExpanded] = useState<boolean>(false);
+
+  const chronological = [...grouped].sort(([a], [b]) => a.localeCompare(b));
+  const allDates = chronological.map(([d]) => d);
+
+  const totalMatches = grouped.reduce((acc, [, ms]) => acc + ms.length, 0);
   const highlightCount = grouped.reduce(
     (acc, [, ms]) => acc + ms.filter((m) => m.venue === highlight).length,
     0,
   );
 
-  const today_ = grouped.filter(([d]) => bucketFor(d, today) === "today");
-  const upcoming = grouped.filter(([d]) => bucketFor(d, today) === "upcoming");
-  const prior = grouped
-    .filter(([d]) => bucketFor(d, today) === "prior")
-    .sort(([a], [b]) => b.localeCompare(a));
-  const ordered = [...today_, ...prior, ...upcoming];
+  let visible: [string, Match[]][];
+  if (dateFilter !== "all") {
+    visible = chronological.filter(([d]) => d === dateFilter);
+  } else if (expanded) {
+    visible = chronological;
+  } else {
+    const todayDays = chronological.filter(([d]) => d === today);
+    visible = todayDays.length > 0 ? todayDays : chronological.slice(0, 1);
+  }
 
   const nudgeMatchNumbers = new Set<number>();
   {
     let idx = 0;
-    for (const [, ms] of ordered) {
+    for (const [, ms] of visible) {
       for (const m of ms) {
         if (idx > 0 && idx % 5 === 0) nudgeMatchNumbers.add(m.n);
         idx += 1;
@@ -85,7 +98,8 @@ export function ScheduleList({
     }
   }
 
-  function renderDay(date: string, dayMatches: Match[], dim: boolean) {
+  function renderDay(date: string, dayMatches: Match[]) {
+    const dim = date < today;
     return (
       <div key={date}>
         <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500 border-b border-zinc-800 pb-2 mb-3">
@@ -153,36 +167,79 @@ export function ScheduleList({
     );
   }
 
+  const showExpandLink =
+    dateFilter === "all" && !expanded && totalMatches > visible.reduce((a, [, ms]) => a + ms.length, 0);
+
   return (
-    <section className="max-w-3xl mx-auto space-y-10">
+    <section className="max-w-3xl mx-auto space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
           Full Schedule
         </h2>
-        <label className="flex items-center gap-2 text-xs text-zinc-400">
-          <span className="uppercase tracking-wider">Highlight city</span>
-          <select
-            value={highlight}
-            onChange={(e) => setHighlight(e.target.value)}
-            className="bg-zinc-900 border border-zinc-800 text-zinc-200 rounded-md px-2 py-1 text-sm focus:outline-none focus:border-emerald-500"
-          >
-            {venues.map((v) => (
-              <option key={v} value={v}>
-                {v}
-              </option>
-            ))}
-          </select>
-          <span className="text-emerald-400 tabular-nums">
-            {highlightCount}
-          </span>
-        </label>
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="flex items-center gap-2 text-xs text-zinc-400">
+            <span className="uppercase tracking-wider">Date</span>
+            <select
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="bg-zinc-900 border border-zinc-800 text-zinc-200 rounded-md px-2 py-1 text-sm focus:outline-none focus:border-emerald-500"
+            >
+              <option value="all">All dates</option>
+              {allDates.map((d) => (
+                <option key={d} value={d}>
+                  {formatDateShort(d)}
+                  {d === today ? " (today)" : ""}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex items-center gap-2 text-xs text-zinc-400">
+            <span className="uppercase tracking-wider">City</span>
+            <select
+              value={highlight}
+              onChange={(e) => setHighlight(e.target.value)}
+              className="bg-zinc-900 border border-zinc-800 text-zinc-200 rounded-md px-2 py-1 text-sm focus:outline-none focus:border-emerald-500"
+            >
+              {venues.map((v) => (
+                <option key={v} value={v}>
+                  {v}
+                </option>
+              ))}
+            </select>
+            <span className="text-emerald-400 tabular-nums">
+              {highlightCount}
+            </span>
+          </label>
+        </div>
       </div>
 
       <div className="space-y-6">
-        {ordered.map(([date, ms]) =>
-          renderDay(date, ms, bucketFor(date, today) === "prior"),
-        )}
+        {visible.map(([date, ms]) => renderDay(date, ms))}
       </div>
+
+      {showExpandLink && (
+        <div className="flex justify-center">
+          <button
+            type="button"
+            onClick={() => setExpanded(true)}
+            className="text-sm text-emerald-400 hover:text-emerald-300 underline underline-offset-4"
+          >
+            Open full schedule ({totalMatches} matches) →
+          </button>
+        </div>
+      )}
+
+      {dateFilter === "all" && expanded && (
+        <div className="flex justify-center">
+          <button
+            type="button"
+            onClick={() => setExpanded(false)}
+            className="text-sm text-zinc-500 hover:text-zinc-300 underline underline-offset-4"
+          >
+            Collapse schedule
+          </button>
+        </div>
+      )}
     </section>
   );
 }
