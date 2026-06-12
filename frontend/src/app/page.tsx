@@ -115,8 +115,15 @@ export default async function Home() {
         <div className="rounded-lg px-4 py-3 text-center bg-emerald-500/10 border border-emerald-500/40">
           <span className="text-sm text-emerald-100">
             Orchestrated by{" "}
-            <span className="font-bold">The Digital Protexionist</span>: The
-            HUMAN Touch needed in a Digital World!
+            <a
+              href="https://protexionist.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-bold underline hover:text-emerald-50"
+            >
+              The Digital Protexionist
+            </a>
+            : The HUMAN touch needed in a Digital World!
           </span>
         </div>
       </section>
