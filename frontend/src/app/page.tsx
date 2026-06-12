@@ -24,9 +24,9 @@ function groupByDate(list: Match[]): [string, Match[]][] {
   ]);
 }
 
-function todayLA(now: Date): string {
+function todayET(now: Date): string {
   const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Los_Angeles",
+    timeZone: "America/New_York",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -40,7 +40,7 @@ function todayLA(now: Date): string {
 export default async function Home() {
   const grouped = groupByDate(matches);
   const venues = Array.from(new Set(matches.map((m) => m.venue))).sort();
-  const today = todayLA(new Date());
+  const today = todayET(new Date());
 
   const [scoreboard, standings, scorers] = await Promise.all([
     fetchScoreboard(new Date()).catch((): LiveMatch[] => []),
