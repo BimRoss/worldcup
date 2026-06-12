@@ -1,15 +1,38 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import type { Goal } from "./goals";
 
 const STORAGE_KEY = "worldcup-goal-likes-v1";
+const EMPTY_RAW = "[]";
 
-function readLikes(): Set<string> {
-  if (typeof window === "undefined") return new Set();
+const storeListeners = new Set<() => void>();
+
+function subscribeStore(cb: () => void): () => void {
+  storeListeners.add(cb);
+  return () => {
+    storeListeners.delete(cb);
+  };
+}
+
+function notifyStore() {
+  for (const l of [...storeListeners]) l();
+}
+
+function getClientSnapshot(): string {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return new Set();
+    return window.localStorage.getItem(STORAGE_KEY) ?? EMPTY_RAW;
+  } catch {
+    return EMPTY_RAW;
+  }
+}
+
+function getServerSnapshot(): string {
+  return EMPTY_RAW;
+}
+
+function parseLikes(raw: string): Set<string> {
+  try {
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return new Set();
     return new Set(parsed.filter((v): v is string => typeof v === "string"));
@@ -22,6 +45,7 @@ function writeLikes(s: Set<string>) {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(s)));
+    notifyStore();
   } catch {
     // ignore quota / privacy-mode errors
   }
@@ -41,14 +65,13 @@ function labelClass(g: Goal): string {
 }
 
 export function GoalGallery({ goals }: { goals: Goal[] }) {
-  const [liked, setLiked] = useState<Set<string>>(new Set());
-  const [hydrated, setHydrated] = useState(false);
+  const raw = useSyncExternalStore(
+    subscribeStore,
+    getClientSnapshot,
+    getServerSnapshot,
+  );
+  const liked = useMemo(() => parseLikes(raw), [raw]);
   const [openId, setOpenId] = useState<string | null>(null);
-
-  useEffect(() => {
-    setLiked(readLikes());
-    setHydrated(true);
-  }, []);
 
   useEffect(() => {
     if (!openId) return;
@@ -65,13 +88,10 @@ export function GoalGallery({ goals }: { goals: Goal[] }) {
   }, [openId]);
 
   function toggle(id: string) {
-    setLiked((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      writeLikes(next);
-      return next;
-    });
+    const next = new Set(liked);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    writeLikes(next);
   }
 
   const open = openId ? (goals.find((g) => g.id === openId) ?? null) : null;
@@ -94,7 +114,7 @@ export function GoalGallery({ goals }: { goals: Goal[] }) {
       ) : (
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
           {goals.map((g) => {
-            const isLiked = hydrated && liked.has(g.id);
+            const isLiked = liked.has(g.id);
             return (
               <button
                 key={g.id}
