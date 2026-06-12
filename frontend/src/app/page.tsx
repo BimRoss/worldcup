@@ -91,6 +91,8 @@ export default async function Home() {
 
       <LiveSection initial={recent} hasLive={hasLive} today={today} />
 
+      <GoalGallery goals={goals} />
+
       <ScheduleList
         grouped={grouped}
         venues={venues}
@@ -105,8 +107,6 @@ export default async function Home() {
       <GroupRankings initial={standings} />
 
       <Leaders scorers={scorers} />
-
-      <GoalGallery goals={goals} />
 
       <footer className="max-w-3xl mx-auto text-center text-xs text-zinc-600 mt-12">
         Times shown in venue-local.
