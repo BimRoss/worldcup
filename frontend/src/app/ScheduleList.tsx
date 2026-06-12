@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useState } from "react";
-import { LA_VENUE, type Match } from "./schedule";
+import { type Match } from "./schedule";
 import type { LiveMatch } from "./scores";
 
 function formatDate(iso: string): string {
@@ -64,25 +64,24 @@ export function ScheduleList({
   scoreMap: Record<string, LiveMatch>;
   today: string;
 }) {
-  const [highlight, setHighlight] = useState<string>(LA_VENUE);
+  const [highlight, setHighlight] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("all");
 
   const chronological = [...grouped].sort(([a], [b]) => a.localeCompare(b));
   const allDates = chronological.map(([d]) => d);
 
-  const totalMatches = grouped.reduce((acc, [, ms]) => acc + ms.length, 0);
-  const highlightCount =
-    highlight === "all"
-      ? totalMatches
-      : grouped.reduce(
-          (acc, [, ms]) => acc + ms.filter((m) => m.venue === highlight).length,
-          0,
-        );
+  const cityAll = highlight === "all";
+  const dateAll = dateFilter === "all";
 
-  const visible: [string, Match[]][] =
-    dateFilter === "all"
-      ? chronological
-      : chronological.filter(([d]) => d === dateFilter);
+  const visible: [string, Match[]][] = chronological
+    .filter(([d]) => dateAll || d === dateFilter)
+    .map(([d, ms]): [string, Match[]] => [
+      d,
+      cityAll ? ms : ms.filter((m) => m.venue === highlight),
+    ])
+    .filter(([, ms]) => ms.length > 0);
+
+  const visibleCount = visible.reduce((acc, [, ms]) => acc + ms.length, 0);
 
   const nudgeMatchNumbers = new Set<number>();
   {
@@ -104,7 +103,7 @@ export function ScheduleList({
         </h3>
         <ul className="space-y-2">
           {dayMatches.map((m) => {
-            const isHighlighted = highlight !== "all" && m.venue === highlight;
+            const isHighlighted = !cityAll && m.venue === highlight;
             const live = scoreMap[`${m.team1}|${m.team2}`];
             const showNudge = nudgeMatchNumbers.has(m.n);
             return (
@@ -202,7 +201,7 @@ export function ScheduleList({
               ))}
             </select>
             <span className="text-emerald-400 tabular-nums">
-              {highlightCount}
+              {visibleCount}
             </span>
           </label>
         </div>
