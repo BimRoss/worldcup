@@ -14,6 +14,8 @@ import { Bracket } from "./Bracket";
 import { BracketModal } from "./BracketModal";
 import { fetchScorers, type Scorer } from "./leaders";
 import { Leaders } from "./Leaders";
+import { fetchGoals, type Goal } from "./goals";
+import { GoalGallery } from "./GoalGallery";
 
 export const revalidate = 180;
 
@@ -35,10 +37,11 @@ export default async function Home() {
   const venues = Array.from(new Set(matches.map((m) => m.venue))).sort();
   const today = todayET(new Date());
 
-  const [scoreboard, standings, scorers] = await Promise.all([
+  const [scoreboard, standings, scorers, goals] = await Promise.all([
     fetchScoreboard(new Date()).catch((): LiveMatch[] => []),
     fetchStandings().catch((): Group[] => []),
     fetchScorers().catch((): Scorer[] => []),
+    fetchGoals(new Date()).catch((): Goal[] => []),
   ]);
   const scoreMap: Record<string, LiveMatch> = {};
   for (const s of scoreboard) {
@@ -102,6 +105,8 @@ export default async function Home() {
       <GroupRankings initial={standings} />
 
       <Leaders scorers={scorers} />
+
+      <GoalGallery goals={goals} />
 
       <footer className="max-w-3xl mx-auto text-center text-xs text-zinc-600 mt-12">
         Times shown in venue-local.
