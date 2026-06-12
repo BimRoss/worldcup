@@ -174,22 +174,6 @@ export function GoalGallery({ goals }: { goals: Goal[] }) {
         </div>
       )}
 
-      <div className="mt-4 rounded-lg px-4 py-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 bg-emerald-500/10 border border-emerald-500/40">
-        <span className="text-sm font-bold text-emerald-100">
-          KICK ALS&apos; ASS!
-        </span>
-        <TrackedLink
-          href="https://www.als.org/donate"
-          target="_blank"
-          rel="noopener"
-          className="inline-block rounded-md bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold px-3 py-1.5 text-xs transition-colors shrink-0"
-          event="cta_click"
-          params={{ cta_id: "donate_als_goal_gallery", link_target: "als" }}
-        >
-          Donate →
-        </TrackedLink>
-      </div>
-
       {open && (
         <div
           role="dialog"
