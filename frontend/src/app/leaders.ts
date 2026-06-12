@@ -101,7 +101,9 @@ export async function fetchScorers(): Promise<Scorer[]> {
     }
   }
 
-  const merged = Array.from(acc.values());
+  const merged = Array.from(acc.values()).filter(
+    (e) => e.goals > 0 || e.assists > 0,
+  );
   merged.sort((a, b) => {
     const pa = a.goals * 2 + a.assists;
     const pb = b.goals * 2 + b.assists;
