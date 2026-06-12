@@ -16,6 +16,7 @@ import { fetchScorers, type Scorer } from "./leaders";
 import { Leaders } from "./Leaders";
 import { fetchGoals, type Goal } from "./goals";
 import { GoalGallery } from "./GoalGallery";
+import { TrackedLink } from "./TrackedLink";
 
 export const revalidate = 180;
 
@@ -72,14 +73,16 @@ export default async function Home() {
           co-pilots. While you watch the cup, come launch yours.
         </p>
         <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <a
+          <TrackedLink
             href="https://makeacompany.ai"
             target="_blank"
             rel="noopener"
             className="inline-block rounded-md bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold px-6 py-3 text-sm sm:text-base transition-colors"
+            event="cta_click"
+            params={{ cta_id: "start_company_hero", link_target: "makeacompany" }}
           >
             Start your company today →
-          </a>
+          </TrackedLink>
           <span className="text-xs text-zinc-500">
             A few <span className="font-bold text-emerald-400">FREE</span>{" "}
             spots left. Work with{" "}

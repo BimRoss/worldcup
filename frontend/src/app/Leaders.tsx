@@ -1,4 +1,5 @@
 import type { Scorer } from "./leaders";
+import { TrackedLink } from "./TrackedLink";
 
 export function Leaders({ scorers }: { scorers: Scorer[] }) {
   return (
@@ -67,12 +68,18 @@ export function Leaders({ scorers }: { scorers: Scorer[] }) {
                     {s.points}
                   </td>
                   <td className="px-2 sm:px-3 py-1.5 text-center">
-                    <a
+                    <TrackedLink
                       href={s.instagramUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label={`Search Instagram for ${s.athleteName}`}
+                      ariaLabel={`Search Instagram for ${s.athleteName}`}
                       className="inline-flex items-center justify-center text-zinc-400 hover:text-pink-400 transition-colors"
+                      event="outbound_click"
+                      params={{
+                        link_target: "instagram_player",
+                        athlete: s.athleteName,
+                        team: s.teamAbbrev || s.teamName,
+                      }}
                     >
                       <svg
                         viewBox="0 0 24 24"
@@ -88,7 +95,7 @@ export function Leaders({ scorers }: { scorers: Scorer[] }) {
                         <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
                         <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
                       </svg>
-                    </a>
+                    </TrackedLink>
                   </td>
                 </tr>
               ))}
