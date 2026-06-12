@@ -7,8 +7,8 @@ import { TrackedLink } from "./TrackedLink";
 import { fetchNews } from "./news";
 
 export const metadata: Metadata = {
-  title: "World Cup 2026 Pickem",
-  description: "Pick the FIFA 2026 winners and chase the leaderboard.",
+  title: "World Cup 2026 Make YOUR Goal",
+  description: "Live FIFA 2026 scores, schedule, group standings, and the goal-of-the-tournament vote.",
 };
 
 export default async function RootLayout({
