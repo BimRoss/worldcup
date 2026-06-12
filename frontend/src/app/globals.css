@@ -83,7 +83,7 @@ body { top: 0 !important; position: static !important; }
   to   { transform: translateX(-50%); }
 }
 .animate-ticker {
-  animation: ticker 90s linear infinite;
+  animation: ticker 180s linear infinite;
   will-change: transform;
 }
 .animate-ticker:hover { animation-play-state: paused; }

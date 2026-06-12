@@ -62,7 +62,6 @@ export function ScheduleList({
   today: string;
 }) {
   const [highlight, setHighlight] = useState<string>(LA_VENUE);
-  const [showPrior, setShowPrior] = useState(false);
   const highlightCount = grouped.reduce(
     (acc, [, ms]) => acc + ms.filter((m) => m.venue === highlight).length,
     0,
@@ -73,16 +72,15 @@ export function ScheduleList({
   const prior = grouped
     .filter(([d]) => bucketFor(d, today) === "prior")
     .sort(([a], [b]) => b.localeCompare(a));
+  const ordered = [...today_, ...prior, ...upcoming];
 
   const nudgeMatchNumbers = new Set<number>();
   {
     let idx = 0;
-    for (const buckets of [today_, upcoming, prior]) {
-      for (const [, ms] of buckets) {
-        for (const m of ms) {
-          if (idx > 0 && idx % 5 === 0) nudgeMatchNumbers.add(m.n);
-          idx += 1;
-        }
+    for (const [, ms] of ordered) {
+      for (const m of ms) {
+        if (idx > 0 && idx % 5 === 0) nudgeMatchNumbers.add(m.n);
+        idx += 1;
       }
     }
   }
@@ -180,37 +178,11 @@ export function ScheduleList({
         </label>
       </div>
 
-      {today_.length > 0 && (
-        <div className="space-y-6">
-          <div className="text-[10px] uppercase tracking-[0.25em] text-emerald-400 -mb-3">
-            Today
-          </div>
-          {today_.map(([date, ms]) => renderDay(date, ms, false))}
-        </div>
-      )}
-
-      {upcoming.length > 0 && (
-        <div className="space-y-6">
-          <div className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 -mb-3">
-            Upcoming
-          </div>
-          {upcoming.map(([date, ms]) => renderDay(date, ms, false))}
-        </div>
-      )}
-
-      {prior.length > 0 && (
-        <div className="space-y-6">
-          <button
-            type="button"
-            onClick={() => setShowPrior((v) => !v)}
-            className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 hover:text-zinc-300 flex items-center gap-2"
-          >
-            <span>{showPrior ? "▾" : "▸"}</span>
-            Prior day{prior.length === 1 ? "" : "s"} ({prior.length})
-          </button>
-          {showPrior && prior.map(([date, ms]) => renderDay(date, ms, true))}
-        </div>
-      )}
+      <div className="space-y-6">
+        {ordered.map(([date, ms]) =>
+          renderDay(date, ms, bucketFor(date, today) === "prior"),
+        )}
+      </div>
     </section>
   );
 }
