@@ -141,8 +141,13 @@ export function ScheduleList({
                   <span className="text-xs font-mono text-zinc-500 w-10 shrink-0">
                     #{m.n}
                   </span>
-                  <span className="text-sm font-mono text-zinc-300 w-24 shrink-0 tabular-nums">
-                    {m.kickoff} {m.tz}
+                  <span className="font-mono w-24 shrink-0 tabular-nums leading-tight">
+                    <span className="block text-[10px] uppercase tracking-wider text-zinc-500">
+                      {formatDateShort(date)}
+                    </span>
+                    <span className="block text-sm text-zinc-300">
+                      {m.kickoff} {m.tz}
+                    </span>
                   </span>
                   <span className="flex-1 min-w-[12rem] font-medium">
                     {m.team1}
