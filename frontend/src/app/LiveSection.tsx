@@ -133,9 +133,10 @@ export function LiveSection({
         if (!res.ok) return;
         const data = (await res.json()) as { scoreboard: LiveMatch[] };
         const sorted = data.scoreboard.slice().sort((a, b) => {
-          const order = { in: 0, pre: 1, post: 2 } as const;
+          const order = { in: 0, post: 1, pre: 2 } as const;
           if (order[a.state] !== order[b.state])
             return order[a.state] - order[b.state];
+          if (a.state === "post") return b.kickoffUtc.localeCompare(a.kickoffUtc);
           return a.kickoffUtc.localeCompare(b.kickoffUtc);
         });
         const next = sorted.slice(0, 8);
@@ -181,7 +182,7 @@ export function LiveSection({
         }
       } catch {}
     }
-    const id = setInterval(tick, 180000);
+    const id = setInterval(tick, 60000);
     return () => {
       stop = true;
       clearInterval(id);
@@ -214,7 +215,7 @@ export function LiveSection({
         ))}
       </div>
       <p className="text-xs text-zinc-600 mt-3">
-        Scores refresh every 15 seconds. Source: ESPN.
+        Scores refresh every minute. Source: ESPN.
       </p>
     </section>
   );
