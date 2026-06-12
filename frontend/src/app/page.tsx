@@ -89,9 +89,9 @@ export default async function Home() {
         </div>
       </section>
 
-      <LiveSection initial={recent} hasLive={hasLive} today={today} />
-
       <GoalGallery goals={goals} />
+
+      <LiveSection initial={recent} hasLive={hasLive} today={today} />
 
       <ScheduleList
         grouped={grouped}

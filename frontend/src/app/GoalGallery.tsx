@@ -97,7 +97,7 @@ export function GoalGallery({ goals }: { goals: Goal[] }) {
   const open = openId ? (goals.find((g) => g.id === openId) ?? null) : null;
 
   return (
-    <section className="max-w-5xl mx-auto mt-16">
+    <section className="max-w-3xl mx-auto mb-12">
       <div className="mb-3 px-1">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
           Goal of the Tournament
@@ -112,7 +112,7 @@ export function GoalGallery({ goals }: { goals: Goal[] }) {
           No goals yet. Tiles appear here the moment one goes in.
         </div>
       ) : (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
           {goals.map((g) => {
             const isLiked = liked.has(g.id);
             return (
