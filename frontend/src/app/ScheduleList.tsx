@@ -70,19 +70,22 @@ export function ScheduleList({
   const chronological = [...grouped].sort(([a], [b]) => a.localeCompare(b));
   const allDates = chronological.map(([d]) => d);
 
-  const totalMatches = grouped.reduce((acc, [, ms]) => acc + ms.length, 0);
-  const highlightCount =
+  const cityFiltered: [string, Match[]][] =
     highlight === "all"
-      ? totalMatches
-      : grouped.reduce(
-          (acc, [, ms]) => acc + ms.filter((m) => m.venue === highlight).length,
-          0,
-        );
+      ? chronological
+      : chronological
+          .map(
+            ([d, ms]) =>
+              [d, ms.filter((m) => m.venue === highlight)] as [string, Match[]],
+          )
+          .filter(([, ms]) => ms.length > 0);
 
   const visible: [string, Match[]][] =
     dateFilter === "all"
-      ? chronological
-      : chronological.filter(([d]) => d === dateFilter);
+      ? cityFiltered
+      : cityFiltered.filter(([d]) => d === dateFilter);
+
+  const visibleCount = visible.reduce((acc, [, ms]) => acc + ms.length, 0);
 
   const nudgeMatchNumbers = new Set<number>();
   {
@@ -202,7 +205,7 @@ export function ScheduleList({
               ))}
             </select>
             <span className="text-emerald-400 tabular-nums">
-              {highlightCount}
+              {visibleCount}
             </span>
           </label>
         </div>
