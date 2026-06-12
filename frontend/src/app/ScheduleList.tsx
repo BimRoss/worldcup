@@ -66,26 +66,23 @@ export function ScheduleList({
 }) {
   const [highlight, setHighlight] = useState<string>(LA_VENUE);
   const [dateFilter, setDateFilter] = useState<string>("all");
-  const [expanded, setExpanded] = useState<boolean>(false);
 
   const chronological = [...grouped].sort(([a], [b]) => a.localeCompare(b));
   const allDates = chronological.map(([d]) => d);
 
   const totalMatches = grouped.reduce((acc, [, ms]) => acc + ms.length, 0);
-  const highlightCount = grouped.reduce(
-    (acc, [, ms]) => acc + ms.filter((m) => m.venue === highlight).length,
-    0,
-  );
+  const highlightCount =
+    highlight === "all"
+      ? totalMatches
+      : grouped.reduce(
+          (acc, [, ms]) => acc + ms.filter((m) => m.venue === highlight).length,
+          0,
+        );
 
-  let visible: [string, Match[]][];
-  if (dateFilter !== "all") {
-    visible = chronological.filter(([d]) => d === dateFilter);
-  } else if (expanded) {
-    visible = chronological;
-  } else {
-    const todayDays = chronological.filter(([d]) => d === today);
-    visible = todayDays.length > 0 ? todayDays : chronological.slice(0, 1);
-  }
+  const visible: [string, Match[]][] =
+    dateFilter === "all"
+      ? chronological
+      : chronological.filter(([d]) => d === dateFilter);
 
   const nudgeMatchNumbers = new Set<number>();
   {
@@ -107,7 +104,7 @@ export function ScheduleList({
         </h3>
         <ul className="space-y-2">
           {dayMatches.map((m) => {
-            const isHighlighted = m.venue === highlight;
+            const isHighlighted = highlight !== "all" && m.venue === highlight;
             const live = scoreMap[`${m.team1}|${m.team2}`];
             const showNudge = nudgeMatchNumbers.has(m.n);
             return (
@@ -167,9 +164,6 @@ export function ScheduleList({
     );
   }
 
-  const showExpandLink =
-    dateFilter === "all" && !expanded && totalMatches > visible.reduce((a, [, ms]) => a + ms.length, 0);
-
   return (
     <section className="max-w-3xl mx-auto space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -200,6 +194,7 @@ export function ScheduleList({
               onChange={(e) => setHighlight(e.target.value)}
               className="bg-zinc-900 border border-zinc-800 text-zinc-200 rounded-md px-2 py-1 text-sm focus:outline-none focus:border-emerald-500"
             >
+              <option value="all">All cities</option>
               {venues.map((v) => (
                 <option key={v} value={v}>
                   {v}
@@ -216,30 +211,6 @@ export function ScheduleList({
       <div className="space-y-6">
         {visible.map(([date, ms]) => renderDay(date, ms))}
       </div>
-
-      {showExpandLink && (
-        <div className="flex justify-center">
-          <button
-            type="button"
-            onClick={() => setExpanded(true)}
-            className="text-sm text-emerald-400 hover:text-emerald-300 underline underline-offset-4"
-          >
-            Open full schedule ({totalMatches} matches) →
-          </button>
-        </div>
-      )}
-
-      {dateFilter === "all" && expanded && (
-        <div className="flex justify-center">
-          <button
-            type="button"
-            onClick={() => setExpanded(false)}
-            className="text-sm text-zinc-500 hover:text-zinc-300 underline underline-offset-4"
-          >
-            Collapse schedule
-          </button>
-        </div>
-      )}
     </section>
   );
 }
