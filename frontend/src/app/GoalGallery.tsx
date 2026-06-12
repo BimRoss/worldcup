@@ -1,0 +1,233 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import type { Goal } from "./goals";
+
+const STORAGE_KEY = "worldcup-goal-likes-v1";
+
+function readLikes(): Set<string> {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return new Set();
+    return new Set(parsed.filter((v): v is string => typeof v === "string"));
+  } catch {
+    return new Set();
+  }
+}
+
+function writeLikes(s: Set<string>) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(s)));
+  } catch {
+    // ignore quota / privacy-mode errors
+  }
+}
+
+function goalLabel(g: Goal): string {
+  if (g.isOwnGoal) return "OG";
+  if (g.isPenalty) return "PEN";
+  if (g.isHeader) return "HEADER";
+  return "";
+}
+
+function labelClass(g: Goal): string {
+  if (g.isOwnGoal) return "bg-red-500/15 text-red-400";
+  if (g.isPenalty) return "bg-amber-500/15 text-amber-400";
+  return "bg-zinc-800 text-zinc-300";
+}
+
+export function GoalGallery({ goals }: { goals: Goal[] }) {
+  const [liked, setLiked] = useState<Set<string>>(new Set());
+  const [hydrated, setHydrated] = useState(false);
+  const [openId, setOpenId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLiked(readLikes());
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!openId) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpenId(null);
+    };
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [openId]);
+
+  function toggle(id: string) {
+    setLiked((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      writeLikes(next);
+      return next;
+    });
+  }
+
+  const open = openId ? (goals.find((g) => g.id === openId) ?? null) : null;
+
+  return (
+    <section className="max-w-5xl mx-auto mt-16">
+      <div className="mb-3 px-1">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
+          Goal of the Tournament
+        </h2>
+        <p className="text-xs text-zinc-500 mt-0.5">
+          Every goal scored. Tap to open, then vote for your favorite.
+        </p>
+      </div>
+
+      {goals.length === 0 ? (
+        <div className="rounded-lg border border-zinc-800 bg-zinc-900/40 px-4 py-6 text-center text-sm text-zinc-500">
+          No goals yet. Tiles appear here the moment one goes in.
+        </div>
+      ) : (
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
+          {goals.map((g) => {
+            const isLiked = hydrated && liked.has(g.id);
+            return (
+              <button
+                key={g.id}
+                onClick={() => setOpenId(g.id)}
+                className={`group relative rounded-md border bg-zinc-900/70 p-2 text-left transition-colors ${
+                  isLiked
+                    ? "border-emerald-500/60"
+                    : "border-zinc-800 hover:border-zinc-600"
+                }`}
+              >
+                <div className="flex items-center gap-1.5">
+                  {g.teamLogo && (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={g.teamLogo}
+                      alt={g.teamAbbrev}
+                      className="h-5 w-5 shrink-0"
+                    />
+                  )}
+                  <span className="text-[10px] font-bold tabular-nums text-emerald-400 ml-auto">
+                    {g.minute}
+                  </span>
+                </div>
+                <div className="mt-1 text-[11px] font-semibold leading-tight text-zinc-100 line-clamp-2">
+                  {g.scorer}
+                </div>
+                <div className="mt-1 flex items-center justify-between">
+                  <span className="text-[9px] uppercase tracking-wider text-zinc-500">
+                    vs {g.opponentAbbrev || g.opponent}
+                  </span>
+                  {isLiked && (
+                    <span aria-hidden className="text-emerald-400 text-xs">
+                      ♥
+                    </span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {open && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Goal detail"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
+          onClick={() => setOpenId(null)}
+        >
+          <div
+            className="w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-950 p-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-2">
+              {open.teamLogo && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={open.teamLogo}
+                  alt={open.teamAbbrev}
+                  className="h-8 w-8 shrink-0"
+                />
+              )}
+              <span className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">
+                {open.teamAbbrev || open.team}
+              </span>
+              <span className="text-xs text-zinc-600">vs</span>
+              {open.opponentLogo && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={open.opponentLogo}
+                  alt={open.opponentAbbrev}
+                  className="h-5 w-5 shrink-0 opacity-70"
+                />
+              )}
+              <span className="text-xs text-zinc-400">
+                {open.opponentAbbrev || open.opponent}
+              </span>
+              <span className="ml-auto text-base font-bold tabular-nums text-emerald-400">
+                {open.minute}
+              </span>
+            </div>
+
+            <div className="mt-4 text-xl font-bold text-zinc-100 leading-tight">
+              {open.scorer}
+            </div>
+            {open.assist && (
+              <div className="text-sm text-zinc-400 mt-1">
+                assist {open.assist}
+              </div>
+            )}
+            {goalLabel(open) && (
+              <div className="mt-3">
+                <span
+                  className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded ${labelClass(open)}`}
+                >
+                  {goalLabel(open)}
+                </span>
+              </div>
+            )}
+            {open.text && open.text !== open.scorer && (
+              <p className="mt-4 text-sm text-zinc-400 leading-relaxed">
+                {open.text}
+              </p>
+            )}
+
+            <div className="mt-5 flex items-center gap-2">
+              <button
+                onClick={() => toggle(open.id)}
+                aria-pressed={liked.has(open.id)}
+                className={`inline-flex items-center gap-1.5 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
+                  liked.has(open.id)
+                    ? "bg-emerald-500 text-zinc-950 hover:bg-emerald-400"
+                    : "bg-zinc-800 text-zinc-100 hover:bg-zinc-700"
+                }`}
+              >
+                <span aria-hidden>{liked.has(open.id) ? "♥" : "♡"}</span>
+                {liked.has(open.id) ? "Voted" : "Vote"}
+              </button>
+              <button
+                onClick={() => setOpenId(null)}
+                className="ml-auto text-xs text-zinc-500 hover:text-zinc-300 px-3 py-2"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <p className="text-xs text-zinc-600 mt-3 px-1">
+        Votes are saved on this device. Tournament-wide ranking coming next.
+      </p>
+    </section>
+  );
+}
