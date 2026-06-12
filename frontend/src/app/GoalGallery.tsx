@@ -235,6 +235,24 @@ export function GoalGallery({ goals }: { goals: Goal[] }) {
             <div className="mt-4 text-xl font-bold text-zinc-100 leading-tight">
               {open.scorer}
             </div>
+            <div className="mt-1">
+              <TrackedLink
+                href={`https://www.youtube.com/results?search_query=${encodeURIComponent(
+                  `${open.scorer} goal ${open.teamAbbrev || open.team} vs ${open.opponentAbbrev || open.opponent} World Cup 2026`,
+                )}`}
+                target="_blank"
+                rel="noopener"
+                className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-400 hover:text-emerald-300"
+                event="goal_watch_now"
+                params={{
+                  goal_id: open.id,
+                  scorer: open.scorer,
+                  team: open.teamAbbrev || open.team,
+                }}
+              >
+                ▶ Watch Now
+              </TrackedLink>
+            </div>
             {open.assist && (
               <div className="text-sm text-zinc-400 mt-1">
                 assist {open.assist}
