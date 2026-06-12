@@ -42,6 +42,25 @@ function LiveCard({
 }) {
   const isLive = m.state === "in";
   const isFinal = m.state === "post";
+  const isPre = m.state === "pre";
+  const [localTime, setLocalTime] = useState<string | null>(null);
+  useEffect(() => {
+    if (!isPre) {
+      setLocalTime(null);
+      return;
+    }
+    try {
+      setLocalTime(
+        new Date(m.kickoffUtc).toLocaleTimeString(undefined, {
+          hour: "numeric",
+          minute: "2-digit",
+          timeZoneName: "short",
+        }),
+      );
+    } catch {
+      setLocalTime(null);
+    }
+  }, [isPre, m.kickoffUtc]);
   const badge = isLive ? (
     <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 text-xs font-medium">
       <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
@@ -79,11 +98,19 @@ function LiveCard({
         </div>
       )}
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 min-w-0">
+        <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
           {badge}
           {dayLabel && (
             <span className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 text-[10px] font-medium uppercase tracking-wide">
               {dayLabel}
+            </span>
+          )}
+          {isPre && localTime && (
+            <span
+              suppressHydrationWarning
+              className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 text-[10px] font-medium tabular-nums"
+            >
+              {localTime}
             </span>
           )}
         </div>
