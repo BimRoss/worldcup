@@ -1,17 +1,20 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { LanguageSelector } from "./LanguageSelector";
+import { Ticker } from "./Ticker";
+import { fetchNews } from "./news";
 
 export const metadata: Metadata = {
   title: "World Cup 2026 Pickem",
   description: "Pick the FIFA 2026 winners and chase the leaderboard.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const news = await fetchNews().catch(() => []);
   return (
     <html lang="en">
       <head>
@@ -39,6 +42,7 @@ export default function RootLayout({
             <LanguageSelector />
           </div>
         </div>
+        <Ticker items={news} />
         {children}
       </body>
     </html>

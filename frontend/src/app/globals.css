@@ -78,11 +78,22 @@ body { top: 0 !important; position: static !important; }
   border-color: rgb(161 161 170) !important;
 }
 
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.animate-ticker {
+  animation: ticker 90s linear infinite;
+  will-change: transform;
+}
+.animate-ticker:hover { animation-play-state: paused; }
+
 @media (prefers-reduced-motion: reduce) {
   .animate-score-flash,
   .animate-ball-fly,
   .animate-goal-flash,
-  .animate-goal-shout {
+  .animate-goal-shout,
+  .animate-ticker {
     animation: none;
   }
 }
