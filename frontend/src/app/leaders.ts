@@ -23,6 +23,7 @@ export type Scorer = {
   goals: number;
   assists: number;
   points: number;
+  instagramUrl: string;
 };
 
 type EspnLeadersResponse = {
@@ -119,15 +120,16 @@ export async function fetchScorers(): Promise<Scorer[]> {
         resolveRef<EspnAthlete>(e.athleteRef),
         e.teamRef ? resolveRef<EspnTeam>(e.teamRef) : Promise.resolve(null),
       ]);
+      const name = athlete?.displayName ?? athlete?.fullName ?? "Unknown";
       return {
-        athleteName:
-          athlete?.displayName ?? athlete?.fullName ?? "Unknown",
+        athleteName: name,
         teamName: team?.displayName ?? "",
         teamAbbrev: team?.abbreviation ?? "",
         teamLogo: team?.logos?.[0]?.href ?? "",
         goals: e.goals,
         assists: e.assists,
         points: e.goals * 2 + e.assists,
+        instagramUrl: `https://www.instagram.com/explore/search/keyword/?q=${encodeURIComponent(name)}`,
       };
     }),
   );
