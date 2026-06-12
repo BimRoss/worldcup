@@ -111,7 +111,17 @@ export default async function Home() {
 
       <Leaders scorers={scorers} />
 
-      <footer className="max-w-3xl mx-auto text-center text-xs text-zinc-600 mt-12">
+      <section className="max-w-3xl mx-auto mt-12">
+        <div className="rounded-lg px-4 py-3 text-center bg-emerald-500/10 border border-emerald-500/40">
+          <span className="text-sm text-emerald-100">
+            Orchestrated by{" "}
+            <span className="font-bold">The Digital Protexionist</span>: The
+            HUMAN Touch needed in a Digital World!
+          </span>
+        </div>
+      </section>
+
+      <footer className="max-w-3xl mx-auto text-center text-xs text-zinc-600 mt-8">
         Times shown in venue-local.
       </footer>
     </main>
