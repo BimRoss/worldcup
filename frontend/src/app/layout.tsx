@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Analytics } from "./Analytics";
 import { LanguageSelector } from "./LanguageSelector";
 import { Ticker } from "./Ticker";
+import { TrackedLink } from "./TrackedLink";
 import { fetchNews } from "./news";
 
 export const metadata: Metadata = {
@@ -21,13 +23,16 @@ export default async function RootLayout({
         <meta httpEquiv="refresh" content="180" />
       </head>
       <body>
+        <Analytics />
         <div className="w-full bg-white text-black border-b border-zinc-200">
           <div className="max-w-5xl mx-auto px-4 py-2 flex items-center justify-between gap-3">
-            <a
+            <TrackedLink
               href="https://makeacompany.ai"
               target="_blank"
               rel="noopener"
               className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+              event="outbound_click"
+              params={{ link_target: "makeacompany_header" }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -38,7 +43,7 @@ export default async function RootLayout({
               <span className="text-xs sm:text-sm font-semibold text-emerald-700 hidden sm:inline">
                 makeacompany.ai →
               </span>
-            </a>
+            </TrackedLink>
             <LanguageSelector />
           </div>
         </div>

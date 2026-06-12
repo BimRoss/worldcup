@@ -1,4 +1,5 @@
 import type { NewsItem } from "./news";
+import { TrackedLink } from "./TrackedLink";
 
 export function Ticker({ items }: { items: NewsItem[] }) {
   if (!items.length) return null;
@@ -13,12 +14,18 @@ export function Ticker({ items }: { items: NewsItem[] }) {
         <div className="flex-1 overflow-hidden relative">
           <div className="flex animate-ticker whitespace-nowrap py-1.5 w-max">
             {loop.map((n, i) => (
-              <a
+              <TrackedLink
                 key={`${n.link}-${i}`}
                 href={n.link}
                 target="_blank"
                 rel="noopener"
                 className="px-5 text-xs text-zinc-300 hover:text-emerald-300 transition-colors border-r border-zinc-800/60 inline-flex items-center gap-2"
+                event="outbound_click"
+                params={{
+                  link_target: "news_ticker",
+                  news_source: n.source,
+                  news_title: n.title,
+                }}
               >
                 {n.source && (
                   <span className="text-emerald-400 font-semibold">
@@ -26,7 +33,7 @@ export function Ticker({ items }: { items: NewsItem[] }) {
                   </span>
                 )}
                 <span>{n.title}</span>
-              </a>
+              </TrackedLink>
             ))}
           </div>
         </div>

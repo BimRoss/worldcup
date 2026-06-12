@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import type { Goal } from "./goals";
+import { track } from "./track";
 
 const STORAGE_KEY = "worldcup-goal-likes-v1";
 const EMPTY_RAW = "[]";
@@ -89,9 +90,17 @@ export function GoalGallery({ goals }: { goals: Goal[] }) {
 
   function toggle(id: string) {
     const next = new Set(liked);
+    const action = next.has(id) ? "unvote" : "vote";
     if (next.has(id)) next.delete(id);
     else next.add(id);
     writeLikes(next);
+    const g = goals.find((x) => x.id === id);
+    track("goal_vote", {
+      goal_id: id,
+      action,
+      scorer: g?.scorer,
+      team: g?.teamAbbrev || g?.team,
+    });
   }
 
   const open = openId ? (goals.find((g) => g.id === openId) ?? null) : null;
@@ -118,7 +127,14 @@ export function GoalGallery({ goals }: { goals: Goal[] }) {
             return (
               <button
                 key={g.id}
-                onClick={() => setOpenId(g.id)}
+                onClick={() => {
+                  setOpenId(g.id);
+                  track("goal_open", {
+                    goal_id: g.id,
+                    scorer: g.scorer,
+                    team: g.teamAbbrev || g.team,
+                  });
+                }}
                 className={`group relative rounded-md border bg-zinc-900/70 p-2 text-left transition-colors ${
                   isLiked
                     ? "border-emerald-500/60"
