@@ -58,9 +58,15 @@ export default async function Home() {
     }
   }
   const sortedScores = scoreboard.slice().sort((a, b) => {
-    const order = { in: 0, post: 1, pre: 2 } as const;
-    if (order[a.state] !== order[b.state]) return order[a.state] - order[b.state];
-    if (a.state === "post") return b.kickoffUtc.localeCompare(a.kickoffUtc);
+    const aBucket = a.date === today ? 0 : a.date < today ? 1 : 2;
+    const bBucket = b.date === today ? 0 : b.date < today ? 1 : 2;
+    if (aBucket !== bBucket) return aBucket - bBucket;
+    if (aBucket === 0) {
+      const order = { in: 0, pre: 1, post: 2 } as const;
+      if (order[a.state] !== order[b.state]) return order[a.state] - order[b.state];
+      return a.kickoffUtc.localeCompare(b.kickoffUtc);
+    }
+    if (aBucket === 1) return b.kickoffUtc.localeCompare(a.kickoffUtc);
     return a.kickoffUtc.localeCompare(b.kickoffUtc);
   });
   const recent = sortedScores.slice(0, 8);
@@ -99,7 +105,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <LiveSection initial={recent} hasLive={hasLive} />
+      <LiveSection initial={recent} hasLive={hasLive} today={today} />
 
       <ScheduleList
         grouped={grouped}
