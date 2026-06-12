@@ -89,7 +89,7 @@ async function fetchSummary(eventId: string): Promise<{
   const url =
     "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=" +
     eventId;
-  const res = await fetch(url, { next: { revalidate: 180 } });
+  const res = await fetch(url, { next: { revalidate: 60 } });
   if (!res.ok) return null;
   const data = (await res.json()) as EspnSummary;
   const comp = data.header?.competitions?.[0];
@@ -123,7 +123,7 @@ export async function fetchScoreboard(now: Date): Promise<LiveMatch[]> {
     "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=" +
     dates;
 
-  const res = await fetch(url, { next: { revalidate: 180 } });
+  const res = await fetch(url, { next: { revalidate: 60 } });
   if (!res.ok) return [];
   const data = (await res.json()) as { events?: EspnEvent[] };
   const events = data.events ?? [];
