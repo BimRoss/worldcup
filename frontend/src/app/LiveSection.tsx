@@ -1,18 +1,44 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { LiveMatch, VideoLink } from "./scores";
+import {
+  etDate,
+  sortScoreboard,
+  todayET,
+  type LiveMatch,
+  type VideoLink,
+} from "./scores";
 
 type FlashKey = string;
+
+function dayLabelFor(m: LiveMatch, today: string): string | null {
+  if (m.state === "in") return null;
+  const d = etDate(m.kickoffUtc);
+  if (d === today) return null;
+  const [ty, tm, td] = today.split("-").map(Number);
+  const [dy, dm, dd] = d.split("-").map(Number);
+  const t = Date.UTC(ty, tm - 1, td);
+  const dt = Date.UTC(dy, dm - 1, dd);
+  const diff = Math.round((dt - t) / 86400000);
+  if (diff === -1) return "Yesterday";
+  if (diff === 1) return "Tomorrow";
+  const dow = new Date(dt).toLocaleDateString("en-US", {
+    weekday: "short",
+    timeZone: "UTC",
+  });
+  return dow;
+}
 
 function LiveCard({
   m,
   flash,
   goal,
+  dayLabel,
 }: {
   m: LiveMatch;
   flash: { home: boolean; away: boolean };
   goal: { side: "home" | "away" } | null;
+  dayLabel?: string | null;
 }) {
   const isLive = m.state === "in";
   const isFinal = m.state === "post";
@@ -53,7 +79,14 @@ function LiveCard({
         </div>
       )}
       <div className="flex items-center justify-between gap-2">
-        {badge}
+        <div className="flex items-center gap-1.5 min-w-0">
+          {badge}
+          {dayLabel && (
+            <span className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 text-[10px] font-medium uppercase tracking-wide">
+              {dayLabel}
+            </span>
+          )}
+        </div>
         <span className="text-xs text-zinc-500 truncate">{m.venue}</span>
       </div>
       <div className="space-y-2">
@@ -106,13 +139,14 @@ function LiveCard({
 export function LiveSection({
   initial,
   hasLive: initialHasLive,
-  today,
+  today: initialToday,
 }: {
   initial: LiveMatch[];
   hasLive: boolean;
   today: string;
 }) {
   const [recent, setRecent] = useState<LiveMatch[]>(initial);
+  const [today, setToday] = useState<string>(initialToday);
   const [flashes, setFlashes] = useState<
     Record<FlashKey, { home: boolean; away: boolean }>
   >({});
@@ -134,20 +168,8 @@ export function LiveSection({
         const res = await fetch("/api/scoreboard", { cache: "no-store" });
         if (!res.ok) return;
         const data = (await res.json()) as { scoreboard: LiveMatch[] };
-        const sorted = data.scoreboard.slice().sort((a, b) => {
-          const aBucket = a.date === today ? 0 : a.date < today ? 1 : 2;
-          const bBucket = b.date === today ? 0 : b.date < today ? 1 : 2;
-          if (aBucket !== bBucket) return aBucket - bBucket;
-          if (aBucket === 0) {
-            const order = { in: 0, pre: 1, post: 2 } as const;
-            if (order[a.state] !== order[b.state])
-              return order[a.state] - order[b.state];
-            return a.kickoffUtc.localeCompare(b.kickoffUtc);
-          }
-          if (aBucket === 1) return b.kickoffUtc.localeCompare(a.kickoffUtc);
-          return a.kickoffUtc.localeCompare(b.kickoffUtc);
-        });
-        const next = sorted.slice(0, 8);
+        const nowToday = todayET(new Date());
+        const next = sortScoreboard(data.scoreboard, nowToday).slice(0, 8);
 
         const newFlashes: Record<FlashKey, { home: boolean; away: boolean }> =
           {};
@@ -175,6 +197,7 @@ export function LiveSection({
         }
 
         if (stop) return;
+        setToday(nowToday);
         setRecent(next);
         if (Object.keys(newFlashes).length > 0) {
           setFlashes(newFlashes);
@@ -199,18 +222,22 @@ export function LiveSection({
 
   if (recent.length === 0) return null;
   const hasLive = recent.some((m) => m.state === "in") || initialHasLive;
+  const hasToday = recent.some(
+    (m) => m.state !== "in" && etDate(m.kickoffUtc) === today,
+  );
+  const heading = hasLive
+    ? "Live & Recent"
+    : hasToday
+      ? "Today"
+      : "Recent";
 
   return (
     <section className="max-w-3xl mx-auto mb-12">
       <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400 mb-3 flex items-center gap-2">
-        {hasLive ? (
-          <>
-            <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-            Live &amp; Recent
-          </>
-        ) : (
-          "Today"
+        {hasLive && (
+          <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
         )}
+        {heading}
       </h2>
       <div className="grid sm:grid-cols-2 gap-3">
         {recent.map((m) => (
@@ -219,6 +246,7 @@ export function LiveSection({
             m={m}
             flash={flashes[m.id] ?? { home: false, away: false }}
             goal={goals[m.id] ?? null}
+            dayLabel={dayLabelFor(m, today)}
           />
         ))}
       </div>

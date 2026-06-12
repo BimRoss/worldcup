@@ -183,3 +183,39 @@ function normalizeTeam(s: string): string {
 export function pairKey(a: string, b: string): string {
   return [normalizeTeam(a), normalizeTeam(b)].sort().join("|");
 }
+
+export function etDate(iso: string): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date(iso));
+  const y = parts.find((p) => p.type === "year")!.value;
+  const m = parts.find((p) => p.type === "month")!.value;
+  const d = parts.find((p) => p.type === "day")!.value;
+  return `${y}-${m}-${d}`;
+}
+
+export function todayET(now: Date): string {
+  return etDate(now.toISOString());
+}
+
+export function sortScoreboard(
+  list: LiveMatch[],
+  today: string,
+): LiveMatch[] {
+  function bucket(m: LiveMatch): 0 | 1 | 2 | 3 {
+    if (m.state === "in") return 0;
+    const d = etDate(m.kickoffUtc);
+    if (d === today) return 1;
+    return d < today ? 2 : 3;
+  }
+  return list.slice().sort((a, b) => {
+    const ba = bucket(a);
+    const bb = bucket(b);
+    if (ba !== bb) return ba - bb;
+    if (ba === 2) return b.kickoffUtc.localeCompare(a.kickoffUtc);
+    return a.kickoffUtc.localeCompare(b.kickoffUtc);
+  });
+}

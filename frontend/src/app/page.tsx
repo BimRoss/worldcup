@@ -1,5 +1,11 @@
 import { matches, type Match } from "./schedule";
-import { fetchScoreboard, pairKey, type LiveMatch } from "./scores";
+import {
+  fetchScoreboard,
+  pairKey,
+  sortScoreboard,
+  todayET,
+  type LiveMatch,
+} from "./scores";
 import { ScheduleList } from "./ScheduleList";
 import { fetchStandings, type Group } from "./standings";
 import { GroupRankings } from "./GroupRankings";
@@ -24,19 +30,6 @@ function groupByDate(list: Match[]): [string, Match[]][] {
   ]);
 }
 
-function todayET(now: Date): string {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/New_York",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(now);
-  const y = parts.find((p) => p.type === "year")!.value;
-  const m = parts.find((p) => p.type === "month")!.value;
-  const d = parts.find((p) => p.type === "day")!.value;
-  return `${y}-${m}-${d}`;
-}
-
 export default async function Home() {
   const grouped = groupByDate(matches);
   const venues = Array.from(new Set(matches.map((m) => m.venue))).sort();
@@ -57,19 +50,7 @@ export default async function Home() {
       }
     }
   }
-  const sortedScores = scoreboard.slice().sort((a, b) => {
-    const aBucket = a.date === today ? 0 : a.date < today ? 1 : 2;
-    const bBucket = b.date === today ? 0 : b.date < today ? 1 : 2;
-    if (aBucket !== bBucket) return aBucket - bBucket;
-    if (aBucket === 0) {
-      const order = { in: 0, pre: 1, post: 2 } as const;
-      if (order[a.state] !== order[b.state]) return order[a.state] - order[b.state];
-      return a.kickoffUtc.localeCompare(b.kickoffUtc);
-    }
-    if (aBucket === 1) return b.kickoffUtc.localeCompare(a.kickoffUtc);
-    return a.kickoffUtc.localeCompare(b.kickoffUtc);
-  });
-  const recent = sortedScores.slice(0, 8);
+  const recent = sortScoreboard(scoreboard, today).slice(0, 8);
   const hasLive = recent.some((m) => m.state === "in");
 
   return (
