@@ -106,9 +106,11 @@ function LiveCard({
 export function LiveSection({
   initial,
   hasLive: initialHasLive,
+  today,
 }: {
   initial: LiveMatch[];
   hasLive: boolean;
+  today: string;
 }) {
   const [recent, setRecent] = useState<LiveMatch[]>(initial);
   const [flashes, setFlashes] = useState<
@@ -133,10 +135,16 @@ export function LiveSection({
         if (!res.ok) return;
         const data = (await res.json()) as { scoreboard: LiveMatch[] };
         const sorted = data.scoreboard.slice().sort((a, b) => {
-          const order = { in: 0, post: 1, pre: 2 } as const;
-          if (order[a.state] !== order[b.state])
-            return order[a.state] - order[b.state];
-          if (a.state === "post") return b.kickoffUtc.localeCompare(a.kickoffUtc);
+          const aBucket = a.date === today ? 0 : a.date < today ? 1 : 2;
+          const bBucket = b.date === today ? 0 : b.date < today ? 1 : 2;
+          if (aBucket !== bBucket) return aBucket - bBucket;
+          if (aBucket === 0) {
+            const order = { in: 0, pre: 1, post: 2 } as const;
+            if (order[a.state] !== order[b.state])
+              return order[a.state] - order[b.state];
+            return a.kickoffUtc.localeCompare(b.kickoffUtc);
+          }
+          if (aBucket === 1) return b.kickoffUtc.localeCompare(a.kickoffUtc);
           return a.kickoffUtc.localeCompare(b.kickoffUtc);
         });
         const next = sorted.slice(0, 8);
