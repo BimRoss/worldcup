@@ -214,7 +214,7 @@ export function LiveSection({
         ))}
       </div>
       <p className="text-xs text-zinc-600 mt-3">
-        Scores refresh every 15 seconds. Source: ESPN.
+        Scores refresh every 3 minutes. Source: ESPN.
       </p>
     </section>
   );

@@ -185,7 +185,7 @@ export default async function Home() {
             ))}
           </div>
           <p className="text-xs text-zinc-600 mt-3 px-1">
-            Standings refresh every minute. Source: ESPN.
+            Standings refresh every 3 minutes. Source: ESPN.
           </p>
         </section>
       )}

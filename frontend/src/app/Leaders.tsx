@@ -69,7 +69,7 @@ export function Leaders({ scorers }: { scorers: Scorer[] }) {
         </div>
       )}
       <p className="text-xs text-zinc-600 mt-3 px-1">
-        Stats refresh every two minutes. Source: ESPN.
+        Stats refresh every 3 minutes. Source: ESPN.
       </p>
     </section>
   );
