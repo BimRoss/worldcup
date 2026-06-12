@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { LA_VENUE, type Match } from "./schedule";
 import type { LiveMatch } from "./scores";
 
@@ -87,17 +87,6 @@ export function ScheduleList({
 
   const visibleCount = visible.reduce((acc, [, ms]) => acc + ms.length, 0);
 
-  const nudgeMatchNumbers = new Set<number>();
-  {
-    let idx = 0;
-    for (const [, ms] of visible) {
-      for (const m of ms) {
-        if (idx > 0 && idx % 5 === 0) nudgeMatchNumbers.add(m.n);
-        idx += 1;
-      }
-    }
-  }
-
   function renderDay(date: string, dayMatches: Match[]) {
     const dim = date < today;
     return (
@@ -109,62 +98,43 @@ export function ScheduleList({
           {dayMatches.map((m) => {
             const isHighlighted = highlight !== "all" && m.venue === highlight;
             const live = scoreMap[`${m.team1}|${m.team2}`];
-            const showNudge = nudgeMatchNumbers.has(m.n);
             return (
-              <Fragment key={m.n}>
-                {showNudge && (
-                  <li className="rounded-lg px-4 py-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 bg-emerald-500/10 border border-emerald-500/40">
-                    <span className="text-sm text-emerald-100">
-                      While you watch,{" "}
-                      <span className="font-bold">launch yours.</span> Make a
-                      Company pairs founders with AI co-pilots.
-                    </span>
-                    <a
-                      href="https://makeacompany.ai"
-                      target="_blank"
-                      rel="noopener"
-                      className="inline-block rounded-md bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold px-3 py-1.5 text-xs transition-colors shrink-0"
-                    >
-                      Start now →
-                    </a>
-                  </li>
-                )}
-                <li
+              <li
+                key={m.n}
+                className={
+                  "rounded-lg px-4 py-3 flex flex-wrap items-center gap-x-4 gap-y-1 " +
+                  (isHighlighted
+                    ? "bg-emerald-500/10 border border-emerald-500/40"
+                    : "bg-zinc-900/60 border border-zinc-800") +
+                  (dim ? " opacity-70" : "")
+                }
+              >
+                <span className="text-xs font-mono text-zinc-500 w-10 shrink-0">
+                  #{m.n}
+                </span>
+                <span className="font-mono w-24 shrink-0 tabular-nums leading-tight">
+                  <span className="block text-[10px] uppercase tracking-wider text-zinc-500">
+                    {formatDateShort(date)}
+                  </span>
+                  <span className="block text-sm text-zinc-300">
+                    {m.kickoff} {m.tz}
+                  </span>
+                </span>
+                <span className="flex-1 min-w-[12rem] font-medium">
+                  {m.team1}
+                  <span className="text-zinc-500 mx-2">vs</span>
+                  {m.team2}
+                </span>
+                {live && <ScoreBubbles live={live} m={m} />}
+                <span
                   className={
-                    "rounded-lg px-4 py-3 flex flex-wrap items-center gap-x-4 gap-y-1 " +
-                    (isHighlighted
-                      ? "bg-emerald-500/10 border border-emerald-500/40"
-                      : "bg-zinc-900/60 border border-zinc-800") +
-                    (dim ? " opacity-70" : "")
+                    "text-xs " +
+                    (isHighlighted ? "text-emerald-300" : "text-zinc-500")
                   }
                 >
-                  <span className="text-xs font-mono text-zinc-500 w-10 shrink-0">
-                    #{m.n}
-                  </span>
-                  <span className="font-mono w-24 shrink-0 tabular-nums leading-tight">
-                    <span className="block text-[10px] uppercase tracking-wider text-zinc-500">
-                      {formatDateShort(date)}
-                    </span>
-                    <span className="block text-sm text-zinc-300">
-                      {m.kickoff} {m.tz}
-                    </span>
-                  </span>
-                  <span className="flex-1 min-w-[12rem] font-medium">
-                    {m.team1}
-                    <span className="text-zinc-500 mx-2">vs</span>
-                    {m.team2}
-                  </span>
-                  {live && <ScoreBubbles live={live} m={m} />}
-                  <span
-                    className={
-                      "text-xs " +
-                      (isHighlighted ? "text-emerald-300" : "text-zinc-500")
-                    }
-                  >
-                    {m.venue} · {m.stage}
-                  </span>
-                </li>
-              </Fragment>
+                  {m.venue} · {m.stage}
+                </span>
+              </li>
             );
           })}
         </ul>
@@ -214,6 +184,22 @@ export function ScheduleList({
             </span>
           </label>
         </div>
+      </div>
+
+      <div className="rounded-lg px-4 py-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 bg-emerald-500/10 border border-emerald-500/40">
+        <span className="text-sm text-emerald-100">
+          While you watch,{" "}
+          <span className="font-bold">launch yours.</span> Make a Company pairs
+          founders with AI co-pilots.
+        </span>
+        <a
+          href="https://makeacompany.ai"
+          target="_blank"
+          rel="noopener"
+          className="inline-block rounded-md bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold px-3 py-1.5 text-xs transition-colors shrink-0"
+        >
+          Start now →
+        </a>
       </div>
 
       <div className="space-y-6">
