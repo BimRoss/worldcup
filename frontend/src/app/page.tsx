@@ -84,11 +84,11 @@ export default async function Home() {
             Start your company today →
           </TrackedLink>
           <span className="text-xs text-zinc-300 max-w-md text-center sm:text-left">
-            <span className="font-bold text-emerald-400">
-              We reached our GOAL of 100 users, thank you all!
-            </span>{" "}
-            <span className="font-bold text-emerald-400">FREE</span> week of
-            trial left, sign up and explore now while the game is on!
+            We reached our{" "}
+            <span className="font-bold text-emerald-400">GOAL</span> of{" "}
+            <span className="font-bold text-emerald-400">100</span> users, thank
+            you all! <span className="font-bold text-emerald-400">FREE</span>{" "}
+            week of trial left, sign up and explore now, game on!
           </span>
         </div>
       </section>
