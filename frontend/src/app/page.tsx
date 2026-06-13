@@ -83,11 +83,12 @@ export default async function Home() {
           >
             Start your company today →
           </TrackedLink>
-          <span className="text-xs text-zinc-500">
-            A few <span className="font-bold text-emerald-400">FREE</span>{" "}
-            spots left. Work with{" "}
-            <span className="font-bold text-zinc-200">Ross &amp; Joanne</span>,
-            your AI wingers.
+          <span className="text-xs text-zinc-300 max-w-md text-center sm:text-left">
+            <span className="font-bold text-emerald-400">
+              We reached our GOAL of 100 users, thank you all!
+            </span>{" "}
+            <span className="font-bold text-emerald-400">FREE</span> week of
+            trial left, sign up and explore now while the game is on!
           </span>
         </div>
       </section>
