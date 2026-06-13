@@ -6,9 +6,30 @@ import { Ticker } from "./Ticker";
 import { TrackedLink } from "./TrackedLink";
 import { fetchNews } from "./news";
 
+const SITE_URL = "https://worldcup.makeacompany.ai";
+const SITE_TITLE = "World Cup 2026 Make YOUR Goal";
+const SITE_DESCRIPTION =
+  "Live FIFA 2026 scores, schedule, group standings, and the goal-of-the-tournament vote.";
+
 export const metadata: Metadata = {
-  title: "World Cup 2026 Make YOUR Goal",
-  description: "Live FIFA 2026 scores, schedule, group standings, and the goal-of-the-tournament vote.",
+  metadataBase: new URL(SITE_URL),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    url: SITE_URL,
+    siteName: SITE_TITLE,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export default async function RootLayout({
@@ -19,9 +40,6 @@ export default async function RootLayout({
   const news = await fetchNews().catch(() => []);
   return (
     <html lang="en">
-      <head>
-        <meta httpEquiv="refresh" content="180" />
-      </head>
       <body>
         <Analytics />
         <div className="w-full bg-white text-black border-b border-zinc-200">
