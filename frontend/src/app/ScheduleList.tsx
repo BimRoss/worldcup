@@ -188,9 +188,11 @@ export function ScheduleList({
 
       <div className="rounded-lg px-4 py-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 bg-emerald-500/10 border border-emerald-500/40">
         <span className="text-sm text-emerald-100">
-          <span className="font-bold">We hit our goal of 100!</span> Pilot Make
-          a Company <span className="font-bold">FREE</span> for the next week
-          only.
+          <span className="font-bold">
+            We reached our goal of 100 new users! Thank you!
+          </span>{" "}
+          <span className="font-bold">FREE</span> week of open testing still
+          available, come work with Ross &amp; Joanne, your AI wingers.
         </span>
         <a
           href="https://makeacompany.ai"
