@@ -69,8 +69,9 @@ export default async function Home() {
           Make YOUR <span className="text-emerald-400">COMPANY.</span>
         </h1>
         <p className="mt-4 text-base sm:text-lg text-zinc-300 max-w-2xl mx-auto leading-relaxed">
-          Make a Company helps founders launch real businesses with AI
-          co-pilots. While you watch the cup, come launch yours.
+          <span className="font-bold text-emerald-400">We hit our goal of 100!</span>{" "}
+          For the next week only, you get a chance to pilot Make a Company for{" "}
+          <span className="font-bold text-emerald-400">FREE</span>.
         </p>
         <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
           <TrackedLink
@@ -84,8 +85,8 @@ export default async function Home() {
             Start your company today →
           </TrackedLink>
           <span className="text-xs text-zinc-500">
-            A few <span className="font-bold text-emerald-400">FREE</span>{" "}
-            spots left. Work with{" "}
+            Pilot <span className="font-bold text-emerald-400">FREE</span> for a
+            week. Work with{" "}
             <span className="font-bold text-zinc-200">Ross &amp; Joanne</span>,
             your AI wingers.
           </span>
