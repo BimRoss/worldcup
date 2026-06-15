@@ -2,8 +2,17 @@
 
 import { useEffect, useState } from "react";
 import type { Group } from "./standings";
+import type { Match } from "./schedule";
+import type { LiveMatch } from "./scores";
+import { TeamScheduleModal } from "./TeamScheduleModal";
 
-function GroupCard({ group }: { group: Group }) {
+function GroupCard({
+  group,
+  onPickTeam,
+}: {
+  group: Group;
+  onPickTeam: (team: string) => void;
+}) {
   const top2 = 2;
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 overflow-hidden">
@@ -49,7 +58,14 @@ function GroupCard({ group }: { group: Group }) {
                     (advancing ? "text-emerald-100 font-medium" : "text-zinc-200")
                   }
                 >
-                  {e.team}
+                  <button
+                    type="button"
+                    onClick={() => onPickTeam(e.team)}
+                    className="text-left underline decoration-zinc-700 decoration-dotted underline-offset-2 hover:decoration-emerald-400 hover:text-emerald-300 transition-colors"
+                    title={`View ${e.team} schedule`}
+                  >
+                    {e.team}
+                  </button>
                 </td>
                 <td className="px-1 py-1.5 text-right text-zinc-400 tabular-nums">
                   {e.played}
@@ -78,8 +94,17 @@ function GroupCard({ group }: { group: Group }) {
   );
 }
 
-export function GroupRankings({ initial }: { initial: Group[] }) {
+export function GroupRankings({
+  initial,
+  matches,
+  scoreMap,
+}: {
+  initial: Group[];
+  matches: Match[];
+  scoreMap: Record<string, LiveMatch>;
+}) {
   const [standings, setStandings] = useState<Group[]>(initial);
+  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
 
   useEffect(() => {
     let stop = false;
@@ -116,12 +141,20 @@ export function GroupRankings({ initial }: { initial: Group[] }) {
       </div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {standings.map((g) => (
-          <GroupCard key={g.id} group={g} />
+          <GroupCard key={g.id} group={g} onPickTeam={setSelectedTeam} />
         ))}
       </div>
       <p className="text-xs text-zinc-600 mt-3 px-1">
-        Standings refresh every minute. Source: ESPN.
+        Standings refresh every minute. Tap a team for its full schedule. Source: ESPN.
       </p>
+      {selectedTeam && (
+        <TeamScheduleModal
+          team={selectedTeam}
+          matches={matches}
+          scoreMap={scoreMap}
+          onClose={() => setSelectedTeam(null)}
+        />
+      )}
     </section>
   );
 }

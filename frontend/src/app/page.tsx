@@ -108,7 +108,7 @@ export default async function Home() {
         <Bracket scoreMap={scoreMap} />
       </BracketModal>
 
-      <GroupRankings initial={standings} />
+      <GroupRankings initial={standings} matches={matches} scoreMap={scoreMap} />
 
       <Leaders scorers={scorers} />
 
