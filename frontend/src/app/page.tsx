@@ -15,6 +15,7 @@ import { BracketModal } from "./BracketModal";
 import { fetchScorers, type Scorer } from "./leaders";
 import { Leaders } from "./Leaders";
 import { fetchGoals, type Goal } from "./goals";
+import { fetchAllPlayers, type Player } from "./rosters";
 import { GoalGallery } from "./GoalGallery";
 import { TrackedLink } from "./TrackedLink";
 
@@ -38,11 +39,12 @@ export default async function Home() {
   const venues = Array.from(new Set(matches.map((m) => m.venue))).sort();
   const today = todayET(new Date());
 
-  const [scoreboard, standings, scorers, goals] = await Promise.all([
+  const [scoreboard, standings, scorers, goals, players] = await Promise.all([
     fetchScoreboard(new Date()).catch((): LiveMatch[] => []),
     fetchStandings().catch((): Group[] => []),
     fetchScorers().catch((): Scorer[] => []),
     fetchGoals(new Date()).catch((): Goal[] => []),
+    fetchAllPlayers().catch((): Player[] => []),
   ]);
   const scoreMap: Record<string, LiveMatch> = {};
   const DAY_MS = 24 * 60 * 60 * 1000;
@@ -100,7 +102,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <GoalGallery goals={goals} />
+      <GoalGallery goals={goals} players={players} />
 
       <LiveSection initial={recent} hasLive={hasLive} today={today} />
 

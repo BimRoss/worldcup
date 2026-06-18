@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import type { Goal } from "./goals";
+import type { Player } from "./rosters";
 import { track } from "./track";
 import { TrackedLink } from "./TrackedLink";
 
@@ -74,11 +75,23 @@ type ScorerEntry = {
   count: number;
 };
 
-function buildScorerLeaderboard(goals: Goal[]): ScorerEntry[] {
+function normalize(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function buildScorerLeaderboard(
+  goals: Goal[],
+  players: Player[],
+): ScorerEntry[] {
   const map = new Map<string, ScorerEntry>();
   for (const g of goals) {
     if (g.isOwnGoal) continue;
-    const key = `${g.scorer}|${g.teamAbbrev || g.team}`;
+    const key = `${normalize(g.scorer)}|${(g.teamAbbrev || g.team).toUpperCase()}`;
     const existing = map.get(key);
     if (existing) {
       existing.count += 1;
@@ -92,12 +105,29 @@ function buildScorerLeaderboard(goals: Goal[]): ScorerEntry[] {
       });
     }
   }
+  for (const p of players) {
+    const key = `${normalize(p.name)}|${p.teamAbbrev.toUpperCase()}`;
+    if (map.has(key)) continue;
+    map.set(key, {
+      scorer: p.name,
+      team: p.team,
+      teamAbbrev: p.teamAbbrev,
+      teamLogo: p.teamLogo,
+      count: 0,
+    });
+  }
   return Array.from(map.values()).sort(
     (a, b) => b.count - a.count || a.scorer.localeCompare(b.scorer),
   );
 }
 
-export function GoalGallery({ goals }: { goals: Goal[] }) {
+export function GoalGallery({
+  goals,
+  players,
+}: {
+  goals: Goal[];
+  players: Player[];
+}) {
   const raw = useSyncExternalStore(
     subscribeStore,
     getClientSnapshot,
@@ -106,9 +136,14 @@ export function GoalGallery({ goals }: { goals: Goal[] }) {
   const liked = useMemo(() => parseLikes(raw), [raw]);
   const [openId, setOpenId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [selectedScorer, setSelectedScorer] = useState<string | null>(null);
-
-  const leaderboard = useMemo(() => buildScorerLeaderboard(goals), [goals]);
+  const leaderboard = useMemo(
+    () => buildScorerLeaderboard(goals, players),
+    [goals, players],
+  );
+  const tournamentLeader = leaderboard.find((e) => e.count > 0)?.scorer ?? null;
+  const [selectedScorer, setSelectedScorer] = useState<string | null>(
+    tournamentLeader,
+  );
   const filteredLeaderboard = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return leaderboard;
