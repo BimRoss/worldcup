@@ -45,10 +45,17 @@ export default async function Home() {
     fetchGoals(new Date()).catch((): Goal[] => []),
   ]);
   const scoreMap: Record<string, LiveMatch> = {};
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  function withinOneDay(a: string, b: string): boolean {
+    if (a === b) return true;
+    const da = Date.parse(a + "T00:00:00Z");
+    const db = Date.parse(b + "T00:00:00Z");
+    return Math.abs(da - db) <= DAY_MS;
+  }
   for (const s of scoreboard) {
     const key = pairKey(s.homeTeam, s.awayTeam);
     for (const m of matches) {
-      if (pairKey(m.team1, m.team2) === key && m.date === s.date) {
+      if (pairKey(m.team1, m.team2) === key && withinOneDay(m.date, s.date)) {
         scoreMap[`${m.team1}|${m.team2}`] = s;
         break;
       }
