@@ -66,6 +66,37 @@ function labelClass(g: Goal): string {
   return "bg-zinc-800 text-zinc-300";
 }
 
+type ScorerEntry = {
+  scorer: string;
+  team: string;
+  teamAbbrev: string;
+  teamLogo: string;
+  count: number;
+};
+
+function buildScorerLeaderboard(goals: Goal[]): ScorerEntry[] {
+  const map = new Map<string, ScorerEntry>();
+  for (const g of goals) {
+    if (g.isOwnGoal) continue;
+    const key = `${g.scorer}|${g.teamAbbrev || g.team}`;
+    const existing = map.get(key);
+    if (existing) {
+      existing.count += 1;
+    } else {
+      map.set(key, {
+        scorer: g.scorer,
+        team: g.team,
+        teamAbbrev: g.teamAbbrev,
+        teamLogo: g.teamLogo,
+        count: 1,
+      });
+    }
+  }
+  return Array.from(map.values()).sort(
+    (a, b) => b.count - a.count || a.scorer.localeCompare(b.scorer),
+  );
+}
+
 export function GoalGallery({ goals }: { goals: Goal[] }) {
   const raw = useSyncExternalStore(
     subscribeStore,
@@ -74,6 +105,34 @@ export function GoalGallery({ goals }: { goals: Goal[] }) {
   );
   const liked = useMemo(() => parseLikes(raw), [raw]);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [selectedScorer, setSelectedScorer] = useState<string | null>(null);
+
+  const leaderboard = useMemo(() => buildScorerLeaderboard(goals), [goals]);
+  const filteredLeaderboard = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return leaderboard;
+    return leaderboard.filter(
+      (e) =>
+        e.scorer.toLowerCase().includes(q) ||
+        e.team.toLowerCase().includes(q) ||
+        e.teamAbbrev.toLowerCase().includes(q),
+    );
+  }, [leaderboard, query]);
+
+  const filteredGoals = useMemo(() => {
+    if (selectedScorer) {
+      return goals.filter((g) => g.scorer === selectedScorer);
+    }
+    const q = query.trim().toLowerCase();
+    if (!q) return goals;
+    return goals.filter(
+      (g) =>
+        g.scorer.toLowerCase().includes(q) ||
+        g.team.toLowerCase().includes(q) ||
+        g.teamAbbrev.toLowerCase().includes(q),
+    );
+  }, [goals, query, selectedScorer]);
 
   useEffect(() => {
     if (!openId) return;
@@ -122,8 +181,99 @@ export function GoalGallery({ goals }: { goals: Goal[] }) {
           No goals yet. Tiles appear here the moment one goes in.
         </div>
       ) : (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-          {goals.map((g) => {
+        <>
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setSelectedScorer(null);
+              }}
+              placeholder="Search player or team…"
+              aria-label="Search scorers"
+              className="flex-1 min-w-[10rem] bg-zinc-900 border border-zinc-800 text-zinc-200 placeholder-zinc-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-emerald-500"
+            />
+            {(query || selectedScorer) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setQuery("");
+                  setSelectedScorer(null);
+                }}
+                className="text-xs text-zinc-400 hover:text-zinc-200 underline decoration-dotted"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+
+          <div className="mb-4 rounded-lg border border-zinc-800 bg-zinc-900/60 overflow-hidden">
+            <div className="px-3 py-1.5 border-b border-zinc-800 bg-zinc-900/80 text-[10px] uppercase tracking-wider text-zinc-500 flex items-center justify-between">
+              <span>Top scorers</span>
+              <span className="tabular-nums text-zinc-600">
+                {filteredLeaderboard.length}
+              </span>
+            </div>
+            {filteredLeaderboard.length === 0 ? (
+              <p className="px-3 py-3 text-xs text-zinc-500">No players match.</p>
+            ) : (
+              <ul className="max-h-64 overflow-y-auto divide-y divide-zinc-800/60">
+                {filteredLeaderboard.map((e, i) => {
+                  const isActive = selectedScorer === e.scorer;
+                  return (
+                    <li key={`${e.scorer}-${e.teamAbbrev}`}>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSelectedScorer(isActive ? null : e.scorer)
+                        }
+                        aria-pressed={isActive}
+                        className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs text-left transition-colors ${
+                          isActive
+                            ? "bg-emerald-500/10 text-emerald-100"
+                            : "hover:bg-zinc-800/60 text-zinc-200"
+                        }`}
+                      >
+                        <span className="w-5 text-right text-[10px] tabular-nums text-zinc-500">
+                          {i + 1}
+                        </span>
+                        {e.teamLogo && (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img
+                            src={e.teamLogo}
+                            alt={e.teamAbbrev}
+                            className="h-4 w-4 shrink-0"
+                          />
+                        )}
+                        <span className="flex-1 truncate font-medium">
+                          {e.scorer}
+                        </span>
+                        <span className="text-[10px] uppercase tracking-wider text-zinc-500">
+                          {e.teamAbbrev}
+                        </span>
+                        <span
+                          className={`tabular-nums font-bold ${
+                            isActive ? "text-emerald-300" : "text-emerald-400"
+                          }`}
+                        >
+                          ({e.count})
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+
+          {filteredGoals.length === 0 ? (
+            <div className="rounded-lg border border-zinc-800 bg-zinc-900/40 px-4 py-6 text-center text-sm text-zinc-500">
+              No goals match.
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+              {filteredGoals.map((g) => {
             const isLiked = liked.has(g.id);
             return (
               <button
@@ -171,7 +321,9 @@ export function GoalGallery({ goals }: { goals: Goal[] }) {
               </button>
             );
           })}
-        </div>
+            </div>
+          )}
+        </>
       )}
 
       <div className="mt-4 rounded-lg px-4 py-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 bg-emerald-500/10 border border-emerald-500/40">
