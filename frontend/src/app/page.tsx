@@ -13,7 +13,6 @@ import { LiveSection } from "./LiveSection";
 import { Bracket } from "./Bracket";
 import { BracketModal } from "./BracketModal";
 import { fetchScorers, type Scorer } from "./leaders";
-import { Leaders } from "./Leaders";
 import { fetchGoals, type Goal } from "./goals";
 import { fetchAllPlayers, type Player } from "./rosters";
 import { GoalGallery } from "./GoalGallery";
@@ -65,6 +64,12 @@ export default async function Home() {
   }
   const recent = sortScoreboard(scoreboard, today).slice(0, 8);
   const hasLive = recent.some((m) => m.state === "in");
+  const teamGames: Record<string, number> = {};
+  for (const g of standings) {
+    for (const e of g.entries) {
+      teamGames[e.abbrev.toUpperCase()] = e.played;
+    }
+  }
 
   return (
     <main className="min-h-screen px-4 sm:px-6 py-6">
@@ -102,7 +107,12 @@ export default async function Home() {
         </div>
       </section>
 
-      <GoalGallery goals={goals} players={players} />
+      <GoalGallery
+        goals={goals}
+        players={players}
+        scorers={scorers}
+        teamGames={teamGames}
+      />
 
       <LiveSection initial={recent} hasLive={hasLive} today={today} />
 
@@ -118,8 +128,6 @@ export default async function Home() {
       </BracketModal>
 
       <GroupRankings initial={standings} matches={matches} scoreMap={scoreMap} />
-
-      <Leaders scorers={scorers} />
 
       <section className="max-w-3xl mx-auto mt-12">
         <div className="rounded-lg px-4 py-3 text-center bg-emerald-500/10 border border-emerald-500/40">
