@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import type { Goal } from "./goals";
+import type { Scorer } from "./leaders";
 import type { Player } from "./rosters";
 import { track } from "./track";
 import { TrackedLink } from "./TrackedLink";
@@ -73,7 +74,15 @@ type ScorerEntry = {
   teamAbbrev: string;
   teamLogo: string;
   count: number;
+  goals: number;
+  assists: number;
+  points: number;
+  instagramUrl: string;
 };
+
+function instagramSearchUrl(name: string): string {
+  return `https://www.instagram.com/explore/search/keyword/?q=${encodeURIComponent(name)}`;
+}
 
 function normalize(s: string): string {
   return s
@@ -87,7 +96,16 @@ function normalize(s: string): string {
 function buildScorerLeaderboard(
   goals: Goal[],
   players: Player[],
+  scorers: Scorer[],
 ): ScorerEntry[] {
+  const statsByName = new Map<string, Scorer>();
+  for (const s of scorers) {
+    statsByName.set(normalize(s.athleteName), s);
+  }
+  function statsFor(name: string): Pick<Scorer, "goals" | "assists" | "points" | "instagramUrl"> | null {
+    return statsByName.get(normalize(name)) ?? null;
+  }
+
   const map = new Map<string, ScorerEntry>();
   for (const g of goals) {
     if (g.isOwnGoal) continue;
@@ -96,37 +114,58 @@ function buildScorerLeaderboard(
     if (existing) {
       existing.count += 1;
     } else {
+      const stats = statsFor(g.scorer);
+      const count = 1;
       map.set(key, {
         scorer: g.scorer,
         team: g.team,
         teamAbbrev: g.teamAbbrev,
         teamLogo: g.teamLogo,
-        count: 1,
+        count,
+        goals: stats?.goals ?? count,
+        assists: stats?.assists ?? 0,
+        points: stats?.points ?? count * 2,
+        instagramUrl: stats?.instagramUrl ?? instagramSearchUrl(g.scorer),
       });
     }
+  }
+  for (const e of map.values()) {
+    if (e.goals < e.count) e.goals = e.count;
+    if (e.points < e.goals * 2 + e.assists) e.points = e.goals * 2 + e.assists;
   }
   for (const p of players) {
     const key = `${normalize(p.name)}|${p.teamAbbrev.toUpperCase()}`;
     if (map.has(key)) continue;
+    const stats = statsFor(p.name);
     map.set(key, {
       scorer: p.name,
       team: p.team,
       teamAbbrev: p.teamAbbrev,
       teamLogo: p.teamLogo,
       count: 0,
+      goals: stats?.goals ?? 0,
+      assists: stats?.assists ?? 0,
+      points: stats?.points ?? 0,
+      instagramUrl: stats?.instagramUrl ?? instagramSearchUrl(p.name),
     });
   }
   return Array.from(map.values()).sort(
-    (a, b) => b.count - a.count || a.scorer.localeCompare(b.scorer),
+    (a, b) =>
+      b.points - a.points ||
+      b.goals - a.goals ||
+      b.assists - a.assists ||
+      a.scorer.localeCompare(b.scorer),
   );
 }
 
 export function GoalGallery({
   goals,
   players,
+  scorers,
 }: {
   goals: Goal[];
   players: Player[];
+  scorers: Scorer[];
 }) {
   const raw = useSyncExternalStore(
     subscribeStore,
@@ -137,10 +176,11 @@ export function GoalGallery({
   const [openId, setOpenId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const leaderboard = useMemo(
-    () => buildScorerLeaderboard(goals, players),
-    [goals, players],
+    () => buildScorerLeaderboard(goals, players, scorers),
+    [goals, players, scorers],
   );
-  const tournamentLeader = leaderboard.find((e) => e.count > 0)?.scorer ?? null;
+  const tournamentLeader =
+    leaderboard.find((e) => e.points > 0 || e.count > 0)?.scorer ?? null;
   const [selectedScorer, setSelectedScorer] = useState<string | null>(
     tournamentLeader,
   );
@@ -270,52 +310,108 @@ export function GoalGallery({
               <p className="px-3 py-3 text-xs text-zinc-500">No players match.</p>
             ) : (
               <ul className="max-h-64 overflow-y-auto divide-y divide-zinc-800/60">
+                <li
+                  aria-hidden="true"
+                  className="flex items-center gap-2 px-3 py-1 text-[10px] uppercase tracking-wider text-zinc-500 bg-zinc-900/40"
+                >
+                  <span className="w-5 text-right">#</span>
+                  <span className="w-4" />
+                  <span className="flex-1">Player</span>
+                  <span className="w-7 text-right tabular-nums">G</span>
+                  <span className="w-7 text-right tabular-nums">A</span>
+                  <span className="w-8 text-right tabular-nums">Pts</span>
+                  <span className="w-7 text-center">IG</span>
+                </li>
                 {filteredLeaderboard.map((e, i) => {
                   const isActive = selectedScorer === e.scorer;
                   return (
-                    <li key={`${e.scorer}-${e.teamAbbrev}`}>
+                    <li
+                      key={`${e.scorer}-${e.teamAbbrev}`}
+                      className={`flex items-stretch ${
+                        isActive ? "bg-emerald-500/10" : ""
+                      }`}
+                    >
                       <button
                         type="button"
                         onClick={() =>
                           setSelectedScorer(isActive ? null : e.scorer)
                         }
                         aria-pressed={isActive}
-                        className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs text-left transition-colors ${
+                        className={`flex-1 flex items-center gap-2 pl-3 py-1.5 text-xs text-left transition-colors ${
                           isActive
-                            ? "bg-emerald-500/10 text-emerald-100"
+                            ? "text-emerald-100"
                             : "hover:bg-zinc-800/60 text-zinc-200"
                         }`}
                       >
                         <span className="w-5 text-right text-[10px] tabular-nums text-zinc-500">
                           {i + 1}
                         </span>
-                        {e.teamLogo && (
+                        {e.teamLogo ? (
                           /* eslint-disable-next-line @next/next/no-img-element */
                           <img
                             src={e.teamLogo}
                             alt={e.teamAbbrev}
                             className="h-4 w-4 shrink-0"
                           />
+                        ) : (
+                          <span className="w-4" />
                         )}
                         <span className="flex-1 truncate font-medium">
                           {e.scorer}
+                          <span className="ml-1.5 text-[10px] uppercase tracking-wider text-zinc-500">
+                            {e.teamAbbrev}
+                          </span>
                         </span>
-                        <span className="text-[10px] uppercase tracking-wider text-zinc-500">
-                          {e.teamAbbrev}
+                        <span className="w-7 text-right tabular-nums text-zinc-300">
+                          {e.goals}
+                        </span>
+                        <span className="w-7 text-right tabular-nums text-zinc-300">
+                          {e.assists}
                         </span>
                         <span
-                          className={`tabular-nums font-bold ${
+                          className={`w-8 text-right tabular-nums font-bold ${
                             isActive ? "text-emerald-300" : "text-emerald-400"
                           }`}
                         >
-                          ({e.count})
+                          {e.points}
                         </span>
                       </button>
+                      <TrackedLink
+                        href={e.instagramUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        ariaLabel={`Search Instagram for ${e.scorer}`}
+                        className="flex items-center justify-center w-7 px-2.5 text-zinc-400 hover:text-pink-400 transition-colors"
+                        event="outbound_click"
+                        params={{
+                          link_target: "instagram_player",
+                          athlete: e.scorer,
+                          team: e.teamAbbrev || e.team,
+                        }}
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="h-4 w-4"
+                          aria-hidden="true"
+                        >
+                          <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                          <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                        </svg>
+                      </TrackedLink>
                     </li>
                   );
                 })}
               </ul>
             )}
+            <p className="px-3 py-1.5 border-t border-zinc-800 bg-zinc-900/40 text-[10px] text-zinc-600">
+              Pts = goals × 2 + assists. IG links to an Instagram search by name.
+            </p>
           </div>
 
           {filteredGoals.length === 0 ? (
