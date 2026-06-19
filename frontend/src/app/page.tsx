@@ -16,6 +16,8 @@ import { fetchScorers, type Scorer } from "./leaders";
 import { fetchGoals, type Goal } from "./goals";
 import { fetchAllPlayers, type Player } from "./rosters";
 import { GoalGallery } from "./GoalGallery";
+import { fetchUSOpen, type USOpenLeaderboard } from "./usopen";
+import { TipOfTheCup } from "./TipOfTheCup";
 import { TrackedLink } from "./TrackedLink";
 
 export const revalidate = 180;
@@ -38,13 +40,15 @@ export default async function Home() {
   const venues = Array.from(new Set(matches.map((m) => m.venue))).sort();
   const today = todayET(new Date());
 
-  const [scoreboard, standings, scorers, goals, players] = await Promise.all([
-    fetchScoreboard(new Date()).catch((): LiveMatch[] => []),
-    fetchStandings().catch((): Group[] => []),
-    fetchScorers().catch((): Scorer[] => []),
-    fetchGoals(new Date()).catch((): Goal[] => []),
-    fetchAllPlayers().catch((): Player[] => []),
-  ]);
+  const [scoreboard, standings, scorers, goals, players, usopen] =
+    await Promise.all([
+      fetchScoreboard(new Date()).catch((): LiveMatch[] => []),
+      fetchStandings().catch((): Group[] => []),
+      fetchScorers().catch((): Scorer[] => []),
+      fetchGoals(new Date()).catch((): Goal[] => []),
+      fetchAllPlayers().catch((): Player[] => []),
+      fetchUSOpen().catch((): USOpenLeaderboard | null => null),
+    ]);
   const scoreMap: Record<string, LiveMatch> = {};
   const DAY_MS = 24 * 60 * 60 * 1000;
   function withinOneDay(a: string, b: string): boolean {
@@ -145,6 +149,8 @@ export default async function Home() {
           </span>
         </div>
       </section>
+
+      <TipOfTheCup data={usopen} />
 
       <footer className="max-w-3xl mx-auto text-center text-xs text-zinc-600 mt-8">
         Times shown in venue-local.
