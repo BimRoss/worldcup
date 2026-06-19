@@ -2,14 +2,12 @@ import { matches, type Match } from "./schedule";
 import {
   fetchScoreboard,
   pairKey,
-  sortScoreboard,
   todayET,
   type LiveMatch,
 } from "./scores";
 import { ScheduleList } from "./ScheduleList";
 import { fetchStandings, type Group } from "./standings";
 import { GroupRankings } from "./GroupRankings";
-import { LiveSection } from "./LiveSection";
 import { Bracket } from "./Bracket";
 import { BracketModal } from "./BracketModal";
 import { fetchScorers, type Scorer } from "./leaders";
@@ -66,8 +64,6 @@ export default async function Home() {
       }
     }
   }
-  const recent = sortScoreboard(scoreboard, today).slice(0, 8);
-  const hasLive = recent.some((m) => m.state === "in");
   const teamGames: Record<string, number> = {};
   for (const g of standings) {
     for (const e of g.entries) {
@@ -119,8 +115,6 @@ export default async function Home() {
       />
 
       <TipOfTheCup data={usopen} />
-
-      <LiveSection initial={recent} hasLive={hasLive} today={today} />
 
       <ScheduleList
         grouped={grouped}
