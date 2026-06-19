@@ -21,6 +21,7 @@ type GolfCompetitorStatus = {
 type GolfCompetitor = {
   athlete?: { displayName?: string; shortName?: string };
   score?: { displayValue?: string };
+  statistics?: Array<{ name?: string; displayValue?: string }>;
   status?: GolfCompetitorStatus;
 };
 
@@ -69,12 +70,17 @@ export async function fetchUSOpen(): Promise<USOpenLeaderboard | null> {
       .filter((x) => Number.isFinite(x.rank))
       .sort((a, b) => a.rank - b.rank)
       .slice(0, 10);
-    const leaders: GolfLeader[] = sorted.map(({ c }) => ({
-      position: c.status?.position?.displayName ?? "",
-      name: c.athlete?.displayName ?? c.athlete?.shortName ?? "",
-      toPar: c.score?.displayValue ?? "—",
-      thru: thruText(c.status),
-    }));
+    const leaders: GolfLeader[] = sorted.map(({ c }) => {
+      const tournamentToPar = c.statistics?.find(
+        (s) => s.name === "scoreToPar",
+      )?.displayValue;
+      return {
+        position: c.status?.position?.displayName ?? "",
+        name: c.athlete?.displayName ?? c.athlete?.shortName ?? "",
+        toPar: tournamentToPar ?? c.score?.displayValue ?? "—",
+        thru: thruText(c.status),
+      };
+    });
     return {
       eventName: event.name ?? event.shortName ?? "U.S. Open",
       status:
