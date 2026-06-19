@@ -102,7 +102,7 @@ export function ScheduleList({
   const visibleCount = visible.reduce((acc, [, ms]) => acc + ms.length, 0);
 
   return (
-    <section className="max-w-3xl mx-auto space-y-6">
+    <section className="max-w-3xl mx-auto mt-10 space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
           Full Schedule
