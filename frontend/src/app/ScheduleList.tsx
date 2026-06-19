@@ -103,11 +103,11 @@ export function ScheduleList({
 
   return (
     <section className="max-w-3xl mx-auto mt-10 space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
+      <div className="flex items-start justify-between gap-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400 pt-1">
           Full Schedule
         </h2>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-col items-end gap-2">
           <MultiSelectPopover
             label="Date"
             options={dateOptions}
@@ -125,7 +125,7 @@ export function ScheduleList({
             emptyAllLabel="All cities"
           />
           <span className="text-xs text-emerald-400 tabular-nums">
-            {visibleCount}
+            {visibleCount} matches
           </span>
         </div>
       </div>
