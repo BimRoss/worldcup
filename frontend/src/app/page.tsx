@@ -114,7 +114,7 @@ export default async function Home() {
         teamGames={teamGames}
       />
 
-      <TipOfTheCup data={usopen} />
+      <TipOfTheCup initial={usopen} />
 
       <ScheduleList
         grouped={grouped}

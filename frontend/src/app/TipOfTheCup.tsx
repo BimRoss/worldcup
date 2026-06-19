@@ -1,6 +1,31 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import type { USOpenLeaderboard } from "./usopen";
 
-export function TipOfTheCup({ data }: { data: USOpenLeaderboard | null }) {
+const REFRESH_MS = 180_000;
+
+export function TipOfTheCup({ initial }: { initial: USOpenLeaderboard | null }) {
+  const [data, setData] = useState<USOpenLeaderboard | null>(initial);
+
+  useEffect(() => {
+    let stop = false;
+    async function tick() {
+      try {
+        const res = await fetch("/api/usopen", { cache: "no-store" });
+        if (!res.ok) return;
+        const next = (await res.json()) as { usopen: USOpenLeaderboard | null };
+        if (stop) return;
+        if (next.usopen) setData(next.usopen);
+      } catch {}
+    }
+    const id = setInterval(tick, REFRESH_MS);
+    return () => {
+      stop = true;
+      clearInterval(id);
+    };
+  }, []);
+
   if (!data || data.leaders.length === 0) return null;
   return (
     <section className="max-w-3xl mx-auto mt-8">
