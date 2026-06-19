@@ -64,6 +64,12 @@ export default async function Home() {
   }
   const recent = sortScoreboard(scoreboard, today).slice(0, 8);
   const hasLive = recent.some((m) => m.state === "in");
+  const teamGames: Record<string, number> = {};
+  for (const g of standings) {
+    for (const e of g.entries) {
+      teamGames[e.abbrev.toUpperCase()] = e.played;
+    }
+  }
 
   return (
     <main className="min-h-screen px-4 sm:px-6 py-6">
@@ -101,7 +107,12 @@ export default async function Home() {
         </div>
       </section>
 
-      <GoalGallery goals={goals} players={players} scorers={scorers} />
+      <GoalGallery
+        goals={goals}
+        players={players}
+        scorers={scorers}
+        teamGames={teamGames}
+      />
 
       <LiveSection initial={recent} hasLive={hasLive} today={today} />
 

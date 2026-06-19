@@ -77,6 +77,7 @@ type ScorerEntry = {
   goals: number;
   assists: number;
   points: number;
+  gp: number;
   instagramUrl: string;
 };
 
@@ -97,6 +98,7 @@ function buildScorerLeaderboard(
   goals: Goal[],
   players: Player[],
   scorers: Scorer[],
+  teamGames: Record<string, number>,
 ): ScorerEntry[] {
   const statsByName = new Map<string, Scorer>();
   for (const s of scorers) {
@@ -104,6 +106,9 @@ function buildScorerLeaderboard(
   }
   function statsFor(name: string): Pick<Scorer, "goals" | "assists" | "points" | "instagramUrl"> | null {
     return statsByName.get(normalize(name)) ?? null;
+  }
+  function gpFor(teamAbbrev: string): number {
+    return teamGames[teamAbbrev.toUpperCase()] ?? 0;
   }
 
   const map = new Map<string, ScorerEntry>();
@@ -116,6 +121,7 @@ function buildScorerLeaderboard(
     } else {
       const stats = statsFor(g.scorer);
       const count = 1;
+      const teamAbbrev = g.teamAbbrev || g.team;
       map.set(key, {
         scorer: g.scorer,
         team: g.team,
@@ -125,6 +131,7 @@ function buildScorerLeaderboard(
         goals: stats?.goals ?? count,
         assists: stats?.assists ?? 0,
         points: stats?.points ?? count * 2,
+        gp: gpFor(teamAbbrev),
         instagramUrl: stats?.instagramUrl ?? instagramSearchUrl(g.scorer),
       });
     }
@@ -146,6 +153,7 @@ function buildScorerLeaderboard(
       goals: stats?.goals ?? 0,
       assists: stats?.assists ?? 0,
       points: stats?.points ?? 0,
+      gp: gpFor(p.teamAbbrev),
       instagramUrl: stats?.instagramUrl ?? instagramSearchUrl(p.name),
     });
   }
@@ -162,10 +170,12 @@ export function GoalGallery({
   goals,
   players,
   scorers,
+  teamGames,
 }: {
   goals: Goal[];
   players: Player[];
   scorers: Scorer[];
+  teamGames: Record<string, number>;
 }) {
   const raw = useSyncExternalStore(
     subscribeStore,
@@ -176,8 +186,8 @@ export function GoalGallery({
   const [openId, setOpenId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const leaderboard = useMemo(
-    () => buildScorerLeaderboard(goals, players, scorers),
-    [goals, players, scorers],
+    () => buildScorerLeaderboard(goals, players, scorers, teamGames),
+    [goals, players, scorers, teamGames],
   );
   const tournamentLeader =
     leaderboard.find((e) => e.points > 0 || e.count > 0)?.scorer ?? null;
@@ -317,6 +327,7 @@ export function GoalGallery({
                   <span className="w-5 text-right">#</span>
                   <span className="w-4" />
                   <span className="flex-1">Player</span>
+                  <span className="w-7 text-right tabular-nums">GP</span>
                   <span className="w-7 text-right tabular-nums">G</span>
                   <span className="w-7 text-right tabular-nums">A</span>
                   <span className="w-8 text-right tabular-nums">Pts</span>
@@ -361,6 +372,9 @@ export function GoalGallery({
                           <span className="ml-1.5 text-[10px] uppercase tracking-wider text-zinc-500">
                             {e.teamAbbrev}
                           </span>
+                        </span>
+                        <span className="w-7 text-right tabular-nums text-zinc-400">
+                          {e.gp}
                         </span>
                         <span className="w-7 text-right tabular-nums text-zinc-300">
                           {e.goals}
@@ -410,7 +424,8 @@ export function GoalGallery({
               </ul>
             )}
             <p className="px-3 py-1.5 border-t border-zinc-800 bg-zinc-900/40 text-[10px] text-zinc-600">
-              Pts = goals × 2 + assists. IG links to an Instagram search by name.
+              GP = team games played. Pts = goals × 2 + assists. IG links to an
+              Instagram search by name.
             </p>
           </div>
 
