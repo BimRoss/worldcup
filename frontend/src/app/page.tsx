@@ -118,6 +118,8 @@ export default async function Home() {
         teamGames={teamGames}
       />
 
+      <TipOfTheCup data={usopen} />
+
       <LiveSection initial={recent} hasLive={hasLive} today={today} />
 
       <ScheduleList
@@ -149,8 +151,6 @@ export default async function Home() {
           </span>
         </div>
       </section>
-
-      <TipOfTheCup data={usopen} />
 
       <footer className="max-w-3xl mx-auto text-center text-xs text-zinc-600 mt-8">
         Times shown in venue-local.
