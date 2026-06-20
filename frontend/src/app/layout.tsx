@@ -42,15 +42,16 @@ export default async function RootLayout({
     <html lang="en">
       <body>
         <Analytics />
-        <div className="w-full bg-white text-black border-b border-zinc-200">
+        <div className="w-full bg-white text-black border-b border-zinc-200 sticky top-0 z-40">
           <div className="max-w-5xl mx-auto px-4 py-2 flex items-center justify-between gap-3">
             <TrackedLink
               href="https://makeacompany.ai"
               target="_blank"
               rel="noopener"
-              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+              className="flex items-center hover:opacity-80 transition-opacity shrink-0"
               event="outbound_click"
-              params={{ link_target: "makeacompany_header" }}
+              params={{ link_target: "makeacompany_header_logo" }}
+              ariaLabel="makeacompany.ai"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -58,11 +59,20 @@ export default async function RootLayout({
                 alt="makeacompany.ai"
                 className="h-6 sm:h-7 w-auto shrink-0"
               />
-              <span className="text-xs sm:text-sm font-semibold text-emerald-700 hidden sm:inline">
-                makeacompany.ai →
-              </span>
             </TrackedLink>
-            <LanguageSelector />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <TrackedLink
+                href="https://makeacompany.ai"
+                target="_blank"
+                rel="noopener"
+                className="inline-flex items-center rounded-md bg-emerald-600 hover:bg-emerald-700 transition-colors text-white text-xs sm:text-sm font-semibold px-2.5 sm:px-3.5 py-1.5 sm:py-2 shadow-sm whitespace-nowrap"
+                event="outbound_click"
+                params={{ link_target: "makeacompany_header_cta" }}
+              >
+                Make YOUR company →
+              </TrackedLink>
+              <LanguageSelector />
+            </div>
           </div>
         </div>
         <Ticker items={news} />
