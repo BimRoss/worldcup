@@ -1,0 +1,25 @@
+{
+  "watches": [
+    {
+      "id": "watch-deploy-worldcup-prod-v0.0.71",
+      "kind": "gitops-image-bump",
+      "phase": "image-building",
+      "status": "active",
+      "prompt": "Deploy watcher for BimRoss/rancher-admin (worldcup prod 0.0.71). Run the deploy-watcher skill tick procedure for kind: gitops-image-bump. Target: image=worldcup:v0.0.71 env=prod.",
+      "target": {
+        "repo": "BimRoss/rancher-admin",
+        "image": "worldcup:v0.0.71",
+        "env": "prod",
+        "public_url": "https://worldcup.makeacompany.ai",
+        "ingress_path": "admin/apps/worldcup/ingress.yaml"
+      },
+      "created_at": "2026-06-23T21:21:06Z",
+      "created_by": "U0B9LKT7STY",
+      "deadline_at": "2026-06-23T23:21:06Z",
+      "next_tick_at": "0001-01-01T00:00:00Z",
+      "channel": "C0BATP3FZJ4",
+      "thread_ts": "1782249477.402809",
+      "header": "🏗️ watch-deploy-worldcup-prod-v0.0.71 — image building"
+    }
+  ]
+}
