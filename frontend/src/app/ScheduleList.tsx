@@ -59,11 +59,8 @@ export function ScheduleList({
   );
   const yesterday = useMemo(() => yesterdayOf(today), [today]);
   const defaultDates = useMemo(
-    () =>
-      new Set(
-        allDates.filter((d) => d === today || d === yesterday),
-      ),
-    [allDates, today, yesterday],
+    () => new Set(allDates.filter((d) => d === today)),
+    [allDates, today],
   );
   const defaultCities = useMemo(() => new Set<string>(venues), [venues]);
 
