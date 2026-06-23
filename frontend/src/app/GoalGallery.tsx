@@ -309,20 +309,20 @@ export function GoalGallery({
             )}
           </div>
 
-          <div className="mb-4 rounded-lg border border-zinc-800 bg-zinc-900/60 overflow-hidden">
-            <div className="px-3 py-1.5 border-b border-zinc-800 bg-zinc-900/80 text-[10px] uppercase tracking-wider text-zinc-500 flex items-center justify-between">
+          <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/5 overflow-hidden">
+            <div className="px-3 py-1.5 border-b border-amber-500/20 bg-amber-500/10 text-[10px] uppercase tracking-wider text-amber-200/70 flex items-center justify-between">
               <span>Top scorers</span>
-              <span className="tabular-nums text-zinc-600">
+              <span className="tabular-nums text-amber-200/50">
                 {filteredLeaderboard.length}
               </span>
             </div>
             {filteredLeaderboard.length === 0 ? (
               <p className="px-3 py-3 text-xs text-zinc-500">No players match.</p>
             ) : (
-              <ul className="max-h-64 overflow-y-auto divide-y divide-zinc-800/60">
+              <ul className="max-h-64 overflow-y-auto divide-y divide-amber-500/10">
                 <li
                   aria-hidden="true"
-                  className="flex items-center gap-2 px-3 py-1 text-[10px] uppercase tracking-wider text-zinc-500 bg-zinc-900/40"
+                  className="flex items-center gap-2 px-3 py-1 text-[10px] uppercase tracking-wider text-amber-200/60 bg-amber-500/5"
                 >
                   <span className="w-5 text-right">#</span>
                   <span className="w-4" />
@@ -339,7 +339,7 @@ export function GoalGallery({
                     <li
                       key={`${e.scorer}-${e.teamAbbrev}`}
                       className={`flex items-stretch ${
-                        isActive ? "bg-emerald-500/10" : ""
+                        isActive ? "bg-amber-500/10" : ""
                       }`}
                     >
                       <button
@@ -350,8 +350,8 @@ export function GoalGallery({
                         aria-pressed={isActive}
                         className={`flex-1 flex items-center gap-2 pl-3 py-1.5 text-xs text-left transition-colors ${
                           isActive
-                            ? "text-emerald-100"
-                            : "hover:bg-zinc-800/60 text-zinc-200"
+                            ? "text-amber-100"
+                            : "hover:bg-amber-500/5 text-zinc-200"
                         }`}
                       >
                         <span className="w-5 text-right text-[10px] tabular-nums text-zinc-500">
@@ -384,7 +384,7 @@ export function GoalGallery({
                         </span>
                         <span
                           className={`w-8 text-right tabular-nums font-bold ${
-                            isActive ? "text-emerald-300" : "text-emerald-400"
+                            isActive ? "text-amber-300" : "text-amber-400"
                           }`}
                         >
                           {e.points}
@@ -423,7 +423,7 @@ export function GoalGallery({
                 })}
               </ul>
             )}
-            <p className="px-3 py-1.5 border-t border-zinc-800 bg-zinc-900/40 text-[10px] text-zinc-600">
+            <p className="px-3 py-1.5 border-t border-amber-500/10 bg-amber-500/5 text-[10px] text-amber-200/50">
               GP = team games played. Pts = goals × 2 + assists. IG links to an
               Instagram search by name.
             </p>
