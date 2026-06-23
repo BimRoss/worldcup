@@ -14,8 +14,6 @@ import { fetchScorers, type Scorer } from "./leaders";
 import { fetchGoals, type Goal } from "./goals";
 import { fetchAllPlayers, type Player } from "./rosters";
 import { GoalGallery } from "./GoalGallery";
-import { fetchUSOpen, type USOpenLeaderboard } from "./usopen";
-import { TipOfTheCup } from "./TipOfTheCup";
 import { TrackedLink } from "./TrackedLink";
 
 export const revalidate = 180;
@@ -38,14 +36,13 @@ export default async function Home() {
   const venues = Array.from(new Set(matches.map((m) => m.venue))).sort();
   const today = todayET(new Date());
 
-  const [scoreboard, standings, scorers, goals, players, usopen] =
+  const [scoreboard, standings, scorers, goals, players] =
     await Promise.all([
       fetchScoreboard(new Date()).catch((): LiveMatch[] => []),
       fetchStandings().catch((): Group[] => []),
       fetchScorers().catch((): Scorer[] => []),
       fetchGoals(new Date()).catch((): Goal[] => []),
       fetchAllPlayers().catch((): Player[] => []),
-      fetchUSOpen().catch((): USOpenLeaderboard | null => null),
     ]);
   const scoreMap: Record<string, LiveMatch> = {};
   const DAY_MS = 24 * 60 * 60 * 1000;
@@ -113,8 +110,6 @@ export default async function Home() {
         scorers={scorers}
         teamGames={teamGames}
       />
-
-      <TipOfTheCup initial={usopen} />
 
       <ScheduleList
         grouped={grouped}
