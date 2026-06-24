@@ -99,14 +99,14 @@ export function BracketModal({
     <section className="max-w-3xl mx-auto mb-4">
       <div className="rounded-lg px-4 py-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 bg-amber-500/10 border border-amber-400/50">
         <span className="text-sm font-bold text-amber-200">
-          🏆 Build your bracket — play &amp; share!
+          KNOCK IT OUT
         </span>
         <button
           type="button"
           onClick={launch}
           className="shrink-0 inline-block rounded-md bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold px-3 py-1.5 text-xs transition-colors"
         >
-          Play the bracket →
+          Play the Bracket →
         </button>
       </div>
 
