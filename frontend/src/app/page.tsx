@@ -118,7 +118,7 @@ export default async function Home() {
         today={today}
       />
 
-      <BracketModal>
+      <BracketModal standings={standings}>
         <Bracket scoreMap={scoreMap} />
       </BracketModal>
 
