@@ -32,6 +32,12 @@ type Token = {
 type Picks = Record<number, string>;
 
 const STORE_KEY = "wc26_bracket_picks_v1";
+const BIZ_KEY = "wc26_bracket_biz_v1";
+
+// strip protocol/trailing slash for a clean display label on the share card
+function tidyUrl(raw: string): string {
+  return raw.trim().replace(/^https?:\/\//i, "").replace(/\/+$/, "");
+}
 
 // venue/date per knockout match, joined from the schedule by match number
 const META: Record<number, { venue: string; date: string }> = (() => {
@@ -79,6 +85,8 @@ export function PredictBracket({ standings }: { standings: Group[] }) {
   const [picks, setPicks] = useState<Picks>({});
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [bizName, setBizName] = useState("");
+  const [bizUrl, setBizUrl] = useState("");
   const cardRef = useRef<HTMLDivElement>(null);
 
   // hydrate after mount (not in a lazy initializer) so server and first client
@@ -111,6 +119,30 @@ export function PredictBracket({ standings }: { standings: Group[] }) {
       /* ignore */
     }
   }, [picks]);
+
+  // hydrate + persist the player's own business promo
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(BIZ_KEY);
+      if (raw) {
+        const b = JSON.parse(raw);
+        if (b.name) setBizName(b.name);
+        if (b.url) setBizUrl(b.url);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(BIZ_KEY, JSON.stringify({ name: bizName, url: bizUrl }));
+    } catch {
+      /* ignore */
+    }
+  }, [bizName, bizUrl]);
 
   const byLetter = useMemo(() => groupLetterMap(standings), [standings]);
 
@@ -236,13 +268,16 @@ export function PredictBracket({ standings }: { standings: Group[] }) {
       a.href = url;
       a.download = "my-world-cup-bracket.png";
       a.click();
-      track("bracket_download", { picks: pickedCount });
+      track("bracket_download", {
+        picks: pickedCount,
+        has_biz: !!bizName.trim(),
+      });
     } catch {
       /* ignore */
     } finally {
       setSaving(false);
     }
-  }, [pickedCount]);
+  }, [pickedCount, bizName]);
 
   const reset = useCallback(() => {
     setPicks({});
@@ -279,7 +314,7 @@ export function PredictBracket({ standings }: { standings: Group[] }) {
             type="button"
             onClick={download}
             disabled={saving}
-            className="rounded-md border border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-xs font-semibold px-3 py-2 transition-colors disabled:opacity-50"
+            className="rounded-md border border-amber-400/60 bg-amber-400/15 hover:bg-amber-400/25 text-amber-300 text-xs font-semibold px-3 py-2 transition-colors disabled:opacity-50"
           >
             {saving ? "Saving…" : "Download bracket"}
           </button>
@@ -292,6 +327,34 @@ export function PredictBracket({ standings }: { standings: Group[] }) {
               Reset
             </button>
           )}
+        </div>
+      </div>
+
+      <div className="mb-4 rounded-lg border border-amber-400/30 bg-amber-400/5 px-4 py-3">
+        <div className="text-[11px] font-semibold uppercase tracking-wider text-amber-300/90">
+          Promote your business
+        </div>
+        <div className="text-[11px] text-zinc-500 mt-0.5 mb-2">
+          Add your name and site — they ride along on the bracket you download
+          and share.
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <input
+            type="text"
+            value={bizName}
+            onChange={(e) => setBizName(e.target.value)}
+            placeholder="Your business name"
+            maxLength={40}
+            className="flex-1 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs text-zinc-100 placeholder:text-zinc-600 focus:border-amber-400/60 focus:outline-none"
+          />
+          <input
+            type="text"
+            value={bizUrl}
+            onChange={(e) => setBizUrl(e.target.value)}
+            placeholder="your-website.com"
+            maxLength={60}
+            className="flex-1 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs text-zinc-100 placeholder:text-zinc-600 focus:border-amber-400/60 focus:outline-none"
+          />
         </div>
       </div>
 
@@ -351,6 +414,8 @@ export function PredictBracket({ standings }: { standings: Group[] }) {
         champion={champion}
         finalA={finalPair?.a.label}
         finalB={finalPair?.b.label}
+        bizName={bizName.trim()}
+        bizUrl={tidyUrl(bizUrl)}
       />
     </div>
   );
@@ -453,8 +518,14 @@ function MatchCard({
 
 const ShareCard = forwardRef<
   HTMLDivElement,
-  { champion: Token | null; finalA?: string; finalB?: string }
->(function ShareCard({ champion, finalA, finalB }, ref) {
+  {
+    champion: Token | null;
+    finalA?: string;
+    finalB?: string;
+    bizName?: string;
+    bizUrl?: string;
+  }
+>(function ShareCard({ champion, finalA, finalB, bizName, bizUrl }, ref) {
   return (
     <div style={{ position: "fixed", left: -99999, top: 0 }} aria-hidden>
       <div
@@ -496,6 +567,47 @@ const ShareCard = forwardRef<
           </div>
           {finalA || "—"} <span style={{ color: "#52525b" }}>vs</span> {finalB || "—"}
         </div>
+        {(bizName || bizUrl) && (
+          <div
+            style={{
+              marginTop: 28,
+              padding: "16px 20px",
+              borderRadius: 12,
+              border: "1px solid rgba(251,191,36,0.45)",
+              background:
+                "linear-gradient(135deg, rgba(251,191,36,0.18), rgba(217,119,6,0.06))",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 10,
+                letterSpacing: 3,
+                color: "rgba(252,211,77,0.85)",
+                textTransform: "uppercase",
+              }}
+            >
+              Bracket by
+            </div>
+            {bizName && (
+              <div
+                style={{
+                  fontSize: 22,
+                  fontWeight: 900,
+                  color: "#fde68a",
+                  marginTop: 4,
+                }}
+              >
+                {bizName}
+              </div>
+            )}
+            {bizUrl && (
+              <div style={{ fontSize: 14, color: "#fcd34d", marginTop: 2 }}>
+                {bizUrl}
+              </div>
+            )}
+          </div>
+        )}
+
         <div style={{ marginTop: 32, fontSize: 18, fontWeight: 800 }}>
           Make YOUR <span style={{ color: "#34d399" }}>GOAL.</span> Make YOUR{" "}
           <span style={{ color: "#34d399" }}>COMPANY.</span>

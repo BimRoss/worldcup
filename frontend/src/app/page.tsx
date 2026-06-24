@@ -104,6 +104,10 @@ export default async function Home() {
         </div>
       </section>
 
+      <BracketModal standings={standings}>
+        <Bracket scoreMap={scoreMap} />
+      </BracketModal>
+
       <GoalGallery
         goals={goals}
         players={players}
@@ -117,10 +121,6 @@ export default async function Home() {
         scoreMap={scoreMap}
         today={today}
       />
-
-      <BracketModal standings={standings}>
-        <Bracket scoreMap={scoreMap} />
-      </BracketModal>
 
       <GroupRankings initial={standings} matches={matches} scoreMap={scoreMap} />
 
